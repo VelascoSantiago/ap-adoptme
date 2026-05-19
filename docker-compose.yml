@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  # 1. Base de Datos (MongoDB)
+  mongodb:
+    image: mongo:6.0
+    container_name: adoptme_mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+  # 2. Administrador Visual (Mongo Express)
+  mongo-express:
+    image: mongo-express
+    container_name: adoptme_mongo_express
+    restart: always
+    ports:
+      - "8081:8081"
+    environment:
+      ME_CONFIG_MONGODB_SERVER: mongodb
+    depends_on:
+      - mongodb
+
+  # 3. Gestor de Sesiones (Redis)
+  redis:
+    image: redis:alpine
+    container_name: adoptme_redis
+    ports:
+      - "6379:6379"
+
+  # 4. Backend (Flask)
+  flask-app:
+    build: ./backend
+    container_name: adoptme_flask
+    ports:
+      - "8000:8000"
+    depends_on:
+      - mongodb
+      - redis
+
+  # 5. Proxy Inverso (Nginx)
+  nginx:
+    image: nginx:alpine
+    container_name: adoptme_nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - flask-app
+
+volumes:
+  mongo_data:
