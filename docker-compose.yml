@@ -1,26 +1,27 @@
-version: '3.8'
-
 services:
-  # 1. Base de Datos (MongoDB)
-  mongodb:
-    image: mongo:6.0
-    container_name: adoptme_mongo
+  # 1. Base de Datos (MySQL)
+  mysql:
+    image: mysql:8.0
+    container_name: adoptme_mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: adoptme_db
     ports:
-      - "27017:27017"
+      - "3306:3306"
     volumes:
-      - mongo_data:/data/db
+      - mysql_data:/var/lib/mysql
+      # Esta línea ejecutará un script para crear las tablas automáticamente
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
 
-  # 2. Administrador Visual (Mongo Express)
-  mongo-express:
-    image: mongo-express
-    container_name: adoptme_mongo_express
+  # 2. Administrador Visual (Adminer)
+  adminer:
+    image: adminer
+    container_name: adoptme_adminer
     restart: always
     ports:
-      - "8081:8081"
-    environment:
-      ME_CONFIG_MONGODB_SERVER: mongodb
+      - "8080:8080"
     depends_on:
-      - mongodb
+      - mysql
 
   # 3. Gestor de Sesiones (Redis)
   redis:
@@ -36,7 +37,7 @@ services:
     ports:
       - "8000:8000"
     depends_on:
-      - mongodb
+      - mysql
       - redis
 
   # 5. Proxy Inverso (Nginx)
@@ -51,4 +52,4 @@ services:
       - flask-app
 
 volumes:
-  mongo_data:
+  mysql_data:
