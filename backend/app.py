@@ -2,6 +2,8 @@ from flask import Flask, jsonify, request
 import pymysql
 import redis
 import time
+import uuid
+from functools import wraps
 
 app = Flask(__name__)
 
@@ -26,21 +28,81 @@ def obtener_conexion():
 # --- CONEXIÓN A REDIS ---
 redis_client = redis.Redis(host='redis', port=6379, db=0, decode_responses=True)
 
+# --- DECORADOR: Validar que el usuario inició sesión (Admin o Adoptante) ---
+def requiere_login(f):
+    @wraps(f)
+    def decorador(*args, **kwargs):
+        token = request.headers.get('Authorization')
+        if not token:
+            return jsonify({"error": "Falta el token de acceso. Por favor, inicia sesión."}), 401
+        
+        # Extraemos el ID del usuario directamente de Redis
+        usuario_id = redis_client.get(token)
+        if not usuario_id:
+            return jsonify({"error": "Sesión expirada o inválida."}), 401
+            
+        # Pasamos el usuario_id como un argumento invisible a la función de la ruta
+        return f(usuario_id, *args, **kwargs)
+    return decorador
+
+# --- DECORADOR: Validar permisos estrictos de Administrador ---
+def requiere_admin(f):
+    @wraps(f)
+    def decorador(*args, **kwargs):
+        token = request.headers.get('Authorization')
+        if not token:
+            return jsonify({"error": "Falta el token de acceso"}), 401
+        
+        usuario_id = redis_client.get(token)
+        if not usuario_id:
+            return jsonify({"error": "Sesión inválida o expirada."}), 401
+            
+        conexion = obtener_conexion()
+        try:
+            with conexion.cursor() as cursor:
+                cursor.execute("SELECT rol FROM usuarios WHERE id = %s", (usuario_id,))
+                usuario = cursor.fetchone()
+                if not usuario or usuario['rol'] != 'admin':
+                    return jsonify({"error": "Acceso denegado. Se requieren permisos de administrador."}), 403
+        finally:
+            conexion.close()
+            
+        return f(*args, **kwargs)
+    return decorador
+
+# --- ENDPOINT DE LOGIN ---
+@app.route('/login', methods=['POST'])
+def login():
+    datos = request.get_json()
+    email = datos.get('email')
+    password = datos.get('password') 
+    
+    conexion = obtener_conexion()
+    try:
+        with conexion.cursor() as cursor:
+            cursor.execute("SELECT id, rol FROM usuarios WHERE email = %s AND password_hash = %s", (email, password))
+            usuario = cursor.fetchone()
+            
+            if usuario:
+                token = str(uuid.uuid4())
+                redis_client.setex(token, 86400, usuario['id'])
+                return jsonify({"mensaje": "Bienvenido al panel", "token": token, "rol": usuario['rol']}), 200
+            else:
+                return jsonify({"error": "Correo o contraseña incorrectos"}), 401
+    finally:
+        conexion.close()
+
 # --- FUNCIÓN AUXILIAR: Formatear Fechas ---
-# Convierte los objetos datetime de MySQL a texto para que jsonify no falle
 def sanitizar_fechas(registro):
     for key, value in registro.items():
-        if hasattr(value, 'isoformat'): # Si es una fecha/hora, la convierte a string
+        if hasattr(value, 'isoformat'):
             registro[key] = value.isoformat()
     return registro
 
 
 @app.route('/')
 def index():
-    return jsonify({
-        "mensaje": "¡Bienvenido a la API de AdoptMe!",
-        "estado": "El backend está conectado a MySQL y funcionando."
-    })
+    return jsonify({"mensaje": "¡Bienvenido a la API de AdoptMe!"})
 
 
 # ==========================================
@@ -48,6 +110,7 @@ def index():
 # ==========================================
 
 @app.route('/agregar', methods=['POST'])
+@requiere_admin # <-- RUTA PROTEGIDA
 def agregar_mascota():
     datos = request.get_json()
     if not datos:
@@ -57,16 +120,19 @@ def agregar_mascota():
     try:
         with conexion.cursor() as cursor:
             sql = """INSERT INTO mascotas 
-                     (nombre, especie, raza, fecha_nacimiento_aprox, tamano, salud, estado_adopcion, notas_medicas) 
-                     VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"""
+                     (nombre, especie, raza, fecha_nacimiento_aprox, tamano, sexo, energia, salud, estado_adopcion, notas_medicas) 
+                     VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"""
             valores = (
                 datos.get('nombre'), datos.get('especie'), datos.get('raza', 'Mestizo'),
-                datos.get('fecha_nacimiento_aprox'), datos.get('tamano'), datos.get('salud'),
+                datos.get('fecha_nacimiento_aprox'), datos.get('tamano'), datos.get('sexo'), 
+                datos.get('energia', 'Media'), datos.get('salud'),
                 datos.get('estado_adopcion', 'disponible'), datos.get('notas_medicas', '')
             )
             cursor.execute(sql, valores)
         conexion.commit()
         return jsonify({"mensaje": "Mascota registrada", "id_asignado": cursor.lastrowid}), 201
+    except pymysql.err.IntegrityError as e:
+        return jsonify({"error": "Faltan datos obligatorios o hay un error de formato", "detalle": str(e)}), 400
     finally:
         conexion.close()
 
@@ -82,6 +148,7 @@ def ver_mascotas():
         conexion.close()
 
 @app.route('/mascotas/<int:id_mascota>', methods=['DELETE'])
+@requiere_admin # <-- RUTA PROTEGIDA
 def eliminar_mascota(id_mascota):
     conexion = obtener_conexion()
     try:
@@ -107,8 +174,7 @@ def registrar_usuario():
                      VALUES (%s, %s, %s, %s, %s)"""
             valores = (
                 datos.get('nombre_completo'), datos.get('email'), 
-                datos.get('password'), # En producción aquí aplicaríamos un hash de seguridad
-                datos.get('telefono'), datos.get('rol', 'adoptante')
+                datos.get('password'), datos.get('telefono'), datos.get('rol', 'adoptante')
             )
             cursor.execute(sql, valores)
         conexion.commit()
@@ -121,7 +187,6 @@ def ver_usuarios():
     conexion = obtener_conexion()
     try:
         with conexion.cursor() as cursor:
-            # Omitimos el password_hash por seguridad
             cursor.execute("SELECT id, nombre_completo, email, telefono, rol, activo, creado_en FROM usuarios")
             usuarios = [sanitizar_fechas(u) for u in cursor.fetchall()]
         return jsonify(usuarios), 200
@@ -130,65 +195,48 @@ def ver_usuarios():
 
 
 # ==========================================
-# MÓDULO 3: SOLICITUDES (La parte relacional)
+# MÓDULO 3: SOLICITUDES
 # ==========================================
 
 @app.route('/solicitudes', methods=['POST'])
-def crear_solicitud():
+@requiere_login # <--- MAGIA: Protegemos la ruta e inyectamos el usuario_id verificado
+def crear_solicitud(usuario_id):
     datos = request.get_json()
-    conexion = obtener_conexion()
-    try:
-        with conexion.cursor() as cursor:
-            sql = "INSERT INTO solicitudes (usuario_id, mascota_id) VALUES (%s, %s)"
-            cursor.execute(sql, (datos.get('usuario_id'), datos.get('mascota_id')))
-        conexion.commit()
-        return jsonify({"mensaje": "Solicitud creada, en espera de revisión"}), 201
-    except pymysql.err.IntegrityError:
-        return jsonify({"error": "El usuario o la mascota no existen"}), 400
-    finally:
-        conexion.close()
-
-@app.route('/solicitudes', methods=['GET'])
-def ver_solicitudes():
-    conexion = obtener_conexion()
-    try:
-        with conexion.cursor() as cursor:
-            # ¡Magia SQL! Unimos las 3 tablas para dar una respuesta legible
-            sql = """
-                SELECT s.id, u.nombre_completo AS adoptante, u.email, 
-                       m.nombre AS mascota, m.especie, s.estado, s.creado_en 
-                FROM solicitudes s
-                JOIN usuarios u ON s.usuario_id = u.id
-                JOIN mascotas m ON s.mascota_id = m.id
-            """
-            cursor.execute(sql)
-            solicitudes = [sanitizar_fechas(s) for s in cursor.fetchall()]
-        return jsonify(solicitudes), 200
-    finally:
-        conexion.close()
-
-@app.route('/solicitudes/<int:id_solicitud>/estado', methods=['PATCH'])
-def cambiar_estado_solicitud(id_solicitud):
-    datos = request.get_json()
-    nuevo_estado = datos.get('estado') # Puede ser 'aprobada', 'rechazada', etc.
+    if not datos:
+        return jsonify({"error": "No se enviaron datos"}), 400
+        
+    mascota_id = datos.get('mascota_id')
+    datos_formulario = datos.get('datos_formulario') # Aquí viene el objeto con las 40 preguntas
     
+    if not mascota_id or not datos_formulario:
+        return jsonify({"error": "Faltan campos obligatorios (mascota_id o datos_formulario)"}), 400
+        
     conexion = obtener_conexion()
     try:
         with conexion.cursor() as cursor:
-            # 1. Actualizamos la solicitud
-            cursor.execute("UPDATE solicitudes SET estado = %s WHERE id = %s", (nuevo_estado, id_solicitud))
+            # Verificamos que la mascota exista y esté disponible
+            cursor.execute("SELECT estado_adopcion FROM mascotas WHERE id = %s", (mascota_id,))
+            mascota = cursor.fetchone()
+            if not mascota:
+                return jsonify({"error": "La mascota especificada no existe."}), 404
+            if mascota['estado_adopcion'] != 'disponible':
+                return jsonify({"error": "Esta mascota ya no se encuentra disponible para adopción."}), 400
+
+            # Insertamos la solicitud vinculando el usuario_id de la sesión activa
+            sql = """INSERT INTO solicitudes (usuario_id, mascota_id, datos_formulario, estado) 
+                     VALUES (%s, %s, %s, 'pendiente')"""
             
-            # 2. Si se aprueba, lanzamos un UPDATE automático a la mascota usando una subconsulta
-            if nuevo_estado == 'aprobada':
-                sql_mascota = """
-                    UPDATE mascotas 
-                    SET estado_adopcion = 'adoptado' 
-                    WHERE id = (SELECT mascota_id FROM solicitudes WHERE id = %s)
-                """
-                cursor.execute(sql_mascota, (id_solicitud,))
-                
-        conexion.commit() # Si ambas operaciones tienen éxito, se guardan en disco
-        return jsonify({"mensaje": f"Solicitud {id_solicitud} marcada como {nuevo_estado}"}), 200
+            # json.dumps convierte el diccionario de respuestas del formulario en un string estructurado para MySQL
+            cursor.execute(sql, (usuario_id, mascota_id, json.dumps(datos_formulario)))
+            
+            # Opcional: Cambiamos el estado de la mascota a 'en_proceso' para que nadie más la aplique por ahora
+            cursor.execute("UPDATE mascotas SET estado_adopcion = 'en_proceso' WHERE id = %s", (mascota_id,))
+            
+        conexion.commit()
+        return jsonify({"mensaje": "¡Solicitud de adopción recibida con éxito! El equipo revisará tu perfil."}), 201
+    except Exception as e:
+        conexion.rollback()
+        return jsonify({"error": "Error interno al procesar la solicitud", "detalle": str(e)}), 500
     finally:
         conexion.close()
 

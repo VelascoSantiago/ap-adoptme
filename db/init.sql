@@ -1,4 +1,4 @@
--- Usar la base de datos
+-- Usar la base de datos del proyecto
 USE adoptme_db;
 
 -- ==========================================
@@ -19,14 +19,15 @@ CREATE TABLE IF NOT EXISTS usuarios (
 -- ==========================================
 -- 2. TABLA: mascotas
 -- ==========================================
--- Incluimos los campos base de tu interfaz: nombre, especie, tamaño, salud[cite: 199, 200, 202, 203].
 CREATE TABLE IF NOT EXISTS mascotas (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nombre VARCHAR(100) NOT NULL,
-    especie VARCHAR(50) NOT NULL, 
-    raza VARCHAR(50) DEFAULT 'Mestizo',
-    fecha_nacimiento_aprox DATE, -- Reemplaza a la edad estática 
-    tamano ENUM('Pequeño', 'Mediano', 'Grande', 'Gigante') NOT NULL, 
+    especie VARCHAR(50) NOT NULL, -- Para filtros: Perro, Gato, etc.
+    raza VARCHAR(50) DEFAULT 'Mestizo', -- Para filtros
+    fecha_nacimiento_aprox DATE NOT NULL, -- Para calcular edad dinámicamente
+    tamano ENUM('Pequeño', 'Mediano', 'Grande', 'Gigante') NOT NULL, -- Para filtros
+    sexo ENUM('Macho', 'Hembra') NOT NULL, -- Para filtros (NUEVO)
+    energia ENUM('Baja', 'Media', 'Alta') DEFAULT 'Media', -- Para filtros (NUEVO)
     salud VARCHAR(100) NOT NULL, 
     estado_adopcion ENUM('disponible', 'en_proceso', 'adoptado') DEFAULT 'disponible',
     notas_medicas TEXT,
@@ -35,18 +36,39 @@ CREATE TABLE IF NOT EXISTS mascotas (
 );
 
 -- ==========================================
--- 3. TABLA: solicitudes (Flujo Operativo)
+-- 3. TABLA: solicitudes (Formulario Complejo)
 -- ==========================================
 CREATE TABLE IF NOT EXISTS solicitudes (
     id INT AUTO_INCREMENT PRIMARY KEY,
     usuario_id INT NOT NULL,
     mascota_id INT NOT NULL,
     estado ENUM('pendiente', 'en_revision', 'aprobada', 'rechazada', 'cancelada') DEFAULT 'pendiente',
-    comentarios_admin TEXT, -- Por qué se rechazó o notas de la entrevista
+    
+    -- TOQUE PRO: Aquí se guardará todo el cuestionario gigante (vivienda, estilo de vida, etc.)
+    -- en formato JSON nativo de MySQL. Esto evita tener una tabla con 40 columnas difíciles de mantener.
+    datos_formulario JSON NOT NULL, 
+    
+    comentarios_admin TEXT,
     creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     actualizado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     
-    -- Llaves foráneas
     FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE RESTRICT,
     FOREIGN KEY (mascota_id) REFERENCES mascotas(id) ON DELETE RESTRICT
+);
+
+-- ==========================================
+-- 4. TABLA: citas (NUEVA)
+-- ==========================================
+CREATE TABLE IF NOT EXISTS citas (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    usuario_id INT NOT NULL,
+    mascota_id INT NOT NULL,
+    fecha_hora DATETIME NOT NULL,
+    estado ENUM('pendiente', 'confirmada', 'completada', 'cancelada') DEFAULT 'pendiente',
+    google_calendar_event_id VARCHAR(255) DEFAULT NULL, -- Espacio reservado para la API de Google
+    creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    actualizado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    
+    FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE,
+    FOREIGN KEY (mascota_id) REFERENCES mascotas(id) ON DELETE CASCADE
 );

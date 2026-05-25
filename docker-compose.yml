@@ -39,18 +39,21 @@ services:
     depends_on:
       - mysql
       - redis
+    volumes:
+      # Le damos a Flask una carpeta física para guardar las fotos
+      - ./uploads:/app/uploads
 
-# 5. Proxy Inverso (Nginx)
+  # 5. Proxy Inverso (Nginx)
   nginx:
     image: nginx:alpine
     container_name: adoptme_nginx
     ports:
       - "80:80"
     volumes:
-      # Volumen 1: Le pasamos el archivo de configuración que acabamos de hacer
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      # Volumen 2 (NUEVO): Vinculamos tu carpeta local "frontend" a la carpeta interna de Nginx
       - ./frontend:/usr/share/nginx/html:ro
+      # NUEVO: Le damos a Nginx acceso de lectura a esa misma carpeta
+      - ./uploads:/usr/share/nginx/uploads:ro
     depends_on:
       - flask-app
 
