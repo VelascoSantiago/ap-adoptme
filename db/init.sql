@@ -31,6 +31,7 @@ CREATE TABLE IF NOT EXISTS mascotas (
     salud VARCHAR(100) NOT NULL, 
     estado_adopcion ENUM('disponible', 'en_proceso', 'adoptado') DEFAULT 'disponible',
     notas_medicas TEXT,
+    foto_url VARCHAR(255) DEFAULT NULL,
     creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     actualizado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );

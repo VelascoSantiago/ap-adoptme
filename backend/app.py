@@ -4,6 +4,7 @@ import redis
 import time
 import uuid
 from functools import wraps
+import os
 
 app = Flask(__name__)
 
@@ -110,29 +111,51 @@ def index():
 # ==========================================
 
 @app.route('/agregar', methods=['POST'])
-@requiere_admin # <-- RUTA PROTEGIDA
+@requiere_admin
 def agregar_mascota():
-    datos = request.get_json()
+    # Atrapamos los datos de texto
+    datos = request.form
+    # Atrapamos el archivo físico (si es que enviaron uno)
+    archivo_foto = request.files.get('foto')
+    
     if not datos:
         return jsonify({"error": "No se enviaron datos"}), 400
+
+    # Lógica para procesar la imagen
+    foto_url = None
+    if archivo_foto and archivo_foto.filename != '':
+        # Extraemos la extensión del archivo (ej. jpg, png)
+        ext = archivo_foto.filename.rsplit('.', 1)[1].lower()
+        # Generamos un nombre único y seguro para evitar sobreescribir archivos
+        nombre_seguro = f"{uuid.uuid4().hex}.{ext}"
+        
+        # Le decimos a Python dónde guardar el archivo físicamente
+        ruta_fisica = os.path.join('/app/uploads', nombre_seguro)
+        archivo_foto.save(ruta_fisica)
+        
+        # Esta es la ruta pública que guardaremos en la base de datos para Nginx
+        foto_url = f"/uploads/{nombre_seguro}"
 
     conexion = obtener_conexion()
     try:
         with conexion.cursor() as cursor:
             sql = """INSERT INTO mascotas 
-                     (nombre, especie, raza, fecha_nacimiento_aprox, tamano, sexo, energia, salud, estado_adopcion, notas_medicas) 
-                     VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"""
+                     (nombre, especie, raza, fecha_nacimiento_aprox, tamano, sexo, energia, salud, estado_adopcion, notas_medicas, foto_url) 
+                     VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"""
             valores = (
                 datos.get('nombre'), datos.get('especie'), datos.get('raza', 'Mestizo'),
                 datos.get('fecha_nacimiento_aprox'), datos.get('tamano'), datos.get('sexo'), 
                 datos.get('energia', 'Media'), datos.get('salud'),
-                datos.get('estado_adopcion', 'disponible'), datos.get('notas_medicas', '')
+                datos.get('estado_adopcion', 'disponible'), datos.get('notas_medicas', ''),
+                foto_url # <--- EL NUEVO CAMPO QUE SE INYECTA EN MYSQL
             )
             cursor.execute(sql, valores)
         conexion.commit()
         return jsonify({"mensaje": "Mascota registrada", "id_asignado": cursor.lastrowid}), 201
     except pymysql.err.IntegrityError as e:
         return jsonify({"error": "Faltan datos obligatorios o hay un error de formato", "detalle": str(e)}), 400
+    except Exception as e:
+        return jsonify({"error": "Error interno del servidor", "detalle": str(e)}), 500
     finally:
         conexion.close()
 
