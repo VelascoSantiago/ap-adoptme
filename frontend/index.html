@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AdoptMe - Gestión de Mascotas</title>
+
+<style>
+    /* Estilos base */
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        padding: 20px;
+        background-color: #f4f7f6;
+        margin: 0;
+    }
+
+    .container {
+        max-width: 900px;
+        margin: auto;
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+        color: #444;
+        border-bottom: 2px solid #e0e0e0;
+        padding-bottom: 10px;
+        margin-bottom: 20px;
+    }
+
+    /* HEADER SOLO CON LOGO */
+    .header-app {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-bottom: 40px;
+    }
+
+    .header-app img {
+        width: 400px;
+        height: auto;
+    }
+
+    /* Estilos del Formulario */
+    form {
+        display: grid;
+        gap: 15px;
+        margin-bottom: 40px;
+        background: #fff;
+        padding: 25px;
+        border-radius: 10px;
+        border: 1px solid #f0f0f0;
+    }
+
+    input,
+    select {
+        padding: 12px;
+        border: 1px solid #e0e0e0;
+        border-radius: 6px;
+        font-size: 16px;
+    }
+
+    input:focus,
+    select:focus {
+        border-color: #007bff;
+        outline: none;
+    }
+
+    button {
+        background-color: #28a745;
+        color: white;
+        border: none;
+        padding: 15px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 18px;
+        font-weight: bold;
+    }
+
+    button:hover {
+        background-color: #218838;
+    }
+
+    /* Estilos de la Tabla */
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 0 10px rgba(0,0,0,0.05);
+    }
+
+    th,
+    td {
+        padding: 15px;
+        text-align: left;
+        border-bottom: 1px solid #e0e0e0;
+    }
+
+    th {
+        background-color: #007bff;
+        color: white;
+        font-size: 17px;
+    }
+
+    tr:last-child td {
+        border-bottom: none;
+    }
+
+    tr:hover {
+        background-color: #f8f9fa;
+    }
+
+    /* Estilos para que el formulario parezca una aplicación profesional */
+    form { 
+        display: grid; 
+        grid-template-columns: 1fr 1fr; /* Divide el formulario en dos columnas ordenadas */
+        gap: 20px; 
+        margin-bottom: 40px; 
+        background: #fff; 
+        padding: 25px; 
+        border-radius: 10px; 
+        border: 1px solid #e0e0e0;
+    }
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+    .form-group label {
+        font-weight: bold;
+        color: #555;
+        font-size: 14px;
+    }
+    /* Hace que el botón abarque las dos columnas abajo */
+    button {
+        grid-column: span 2;
+        margin-top: 10px;
+    }
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <!-- HEADER -->
+    <div class="header-app">
+        <img src="img/logo.png" alt="Logo AdoptMe">
+    </div>
+
+    <!-- FORMULARIO -->
+    <h2>Registrar Nueva Mascota</h2>
+    <form id="formulario-mascota">
+        <div class="form-group">
+            <label for="nombre">Nombre de la mascota:</label>
+            <input type="text" id="nombre" placeholder="Ej. Toby, Luna..." required>
+        </div>
+
+        <div class="form-group">
+            <label for="especie">Especie:</label>
+            <select id="especie" required>
+                <option value="">Selecciona una opción...</option>
+                <option value="Perro">Perro</option>
+                <option value="Gato">Gato</option>
+                <option value="Otro">Otro</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="raza">Raza:</label>
+            <input type="text" id="raza" placeholder="Ej. Golden Retriever, Mestizo..." required>
+        </div>
+
+        <div class="form-group">
+            <label for="fecha">Fecha aproximada de nacimiento:</label>
+            <input type="date" id="fecha" required>
+        </div>
+
+        <div class="form-group">
+            <label for="tamano">Tamaño:</label>
+            <select id="tamano" required>
+                <option value="">Selecciona una opción...</option>
+                <option value="Pequeño">Pequeño</option>
+                <option value="Mediano">Mediano</option>
+                <option value="Grande">Grande</option>
+                <option value="Gigante">Gigante</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="salud">Estado de salud inicial:</label>
+            <input type="text" id="salud" placeholder="Ej. Vacunado, excelente estado..." required>
+        </div>
+
+        <button type="submit" style="grid-column: span 2; ">Guardar Mascota</button>
+    </form>
+
+    <!-- TABLA -->
+    <h2>🐾 Mascotas Disponibles 🐾</h2>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Especie</th>
+                <th>Raza</th>
+                <th>Tamaño</th>
+                <th>Estado</th>
+            </tr>
+        </thead>
+
+        <tbody id="tabla-mascotas">
+        </tbody>
+    </table>
+
+</div>
+
+<script>
+
+    // --- FUNCIÓN GET: Cargar mascotas ---
+    async function cargarMascotas() {
+
+        try {
+
+            const respuesta = await fetch('/mascotas');
+            const mascotas = await respuesta.json();
+
+            const tbody = document.getElementById('tabla-mascotas');
+
+            tbody.innerHTML = '';
+
+            mascotas.forEach(mascota => {
+
+                const fila = `
+                    <tr>
+                        <td>${mascota.nombre}</td>
+                        <td>${mascota.especie}</td>
+                        <td>${mascota.raza}</td>
+                        <td>${mascota.tamano}</td>
+                        <td>${mascota.estado_adopcion}</td>
+                    </tr>
+                `;
+
+                tbody.innerHTML += fila;
+
+            });
+
+        } catch (error) {
+
+            console.error("Error al cargar mascotas:", error);
+
+        }
+    }
+
+    // --- FUNCIÓN POST: Guardar mascota ---
+    document.getElementById('formulario-mascota')
+    .addEventListener('submit', async (e) => {
+
+        e.preventDefault();
+
+        const datosMascota = {
+
+            nombre: document.getElementById('nombre').value,
+            especie: document.getElementById('especie').value,
+            raza: document.getElementById('raza').value,
+            fecha_nacimiento_aprox: document.getElementById('fecha').value,
+            tamano: document.getElementById('tamano').value,
+            salud: document.getElementById('salud').value
+
+        };
+
+        try {
+
+            const respuesta = await fetch('/agregar', {
+
+                method: 'POST',
+
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+
+                body: JSON.stringify(datosMascota)
+
+            });
+
+            if (respuesta.ok) {
+
+                alert("¡Mascota registrada con éxito!");
+
+                document.getElementById('formulario-mascota').reset();
+
+                cargarMascotas();
+
+            }
+
+        } catch (error) {
+
+            console.error("Error al guardar:", error);
+
+            alert("Hubo un error al conectar con el servidor.");
+
+        }
+
+    });
+
+    // Cargar datos al abrir
+    cargarMascotas();
+
+</script>
+
+</body>
+</html>
