@@ -3,69 +3,619 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AdoptMe - Encuentra tu compañero ideal</title>
+    <title>AdoptMe — Encuentra tu compañero ideal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet">
     <style>
-        /* Estilos Globales y Navegación */
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background-color: #f4f7f6; color: #333; }
-        .navbar { display: flex; justify-content: space-between; align-items: center; background-color: #fff; padding: 15px 30px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        .navbar-brand { display: flex; align-items: center; gap: 15px; font-size: 24px; font-weight: bold; color: #2c3e50; }
-        .navbar-brand img { width: 50px; height: auto; }
-        .nav-links { display: flex; gap: 15px; }
-        
-        button { padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 14px; transition: background 0.3s; }
-        .btn-primary { background-color: #28a745; color: white; }
-        .btn-primary:hover { background-color: #218838; }
-        .btn-outline { background-color: transparent; border: 2px solid #007bff; color: #007bff; }
-        .btn-outline:hover { background-color: #007bff; color: white; }
-        .btn-danger { background-color: #dc3545; color: white; }
-        
-        /* Contenedores de Vistas */
-        .vista { display: none; padding: 30px; max-width: 1000px; margin: auto; }
+        :root {
+            --bg:        #fdf8f0;
+            --surface:   #ffffff;
+            --surface2:  #fdf3e3;
+            --surface3:  #f7ead5;
+            --accent:    #d4956a;
+            --accent2:   #c07a50;
+            --yellow:    #e8c97a;
+            --green:     #5a9e6f;
+            --red:       #e05c5c;
+            --blue:      #5b8fc9;
+            --text:      #3b2a1a;
+            --text2:     #6b4f35;
+            --muted:     #a07850;
+            --border:    rgba(180,120,60,0.15);
+            --radius:    14px;
+            --radius-sm: 8px;
+            --shadow:    0 2px 12px rgba(180,100,40,0.09);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        /* ── NAVBAR ── */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 36px;
+            height: 70px;
+            background: #ffffff;
+            border-bottom: 1px solid var(--border);
+            box-shadow: var(--shadow);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .navbar-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+        }
+
+        .navbar-brand img {
+            height: 44px;
+            width: auto;
+        }
+
+        .navbar-brand-svg {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-links { display: flex; gap: 10px; align-items: center; }
+
+        /* ── BUTTONS ── */
+        button {
+            font-family: 'DM Sans', sans-serif;
+            font-size: 13.5px;
+            font-weight: 500;
+            padding: 9px 18px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: #fff;
+        }
+        .btn-primary:hover { background: var(--accent2); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(180,100,40,0.25); }
+
+        .btn-outline {
+            background: transparent;
+            border: 1.5px solid var(--border);
+            color: var(--text2);
+        }
+        .btn-outline:hover { border-color: var(--accent); color: var(--accent); background: rgba(212,149,106,0.06); }
+
+        .btn-danger {
+            background: rgba(224,92,92,0.1);
+            color: var(--red);
+            border: 1.5px solid rgba(224,92,92,0.25);
+        }
+        .btn-danger:hover { background: rgba(224,92,92,0.18); }
+
+        .btn-teal {
+            background: rgba(90,158,111,0.1);
+            color: var(--green);
+            border: 1.5px solid rgba(90,158,111,0.25);
+        }
+        .btn-teal:hover { background: rgba(90,158,111,0.18); }
+
+        .btn-blue {
+            background: rgba(91,143,201,0.1);
+            color: var(--blue);
+            border: 1.5px solid rgba(91,143,201,0.25);
+        }
+        .btn-blue:hover { background: rgba(91,143,201,0.18); }
+
+        /* ── VISTAS ── */
+        .vista { display: none; padding: 40px 36px; max-width: 1100px; margin: auto; }
         .vista.activa { display: block; }
-        
-        /* Estilos de Formularios (Login) */
-        .auth-container { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); max-width: 400px; margin: 50px auto; text-align: center; }
-        .auth-container input { width: 90%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box;}
 
-        /* Estilos del Catálogo Público */
-        .catalogo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; margin-top: 20px; }
-        .mascota-card { background: white; border-radius: 10px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); text-align: center; border: 1px solid #f0f0f0; transition: transform 0.2s; }
-        .mascota-card:hover { transform: translateY(-5px); box-shadow: 0 8px 15px rgba(0,0,0,0.1); }
-        .mascota-card h3 { margin: 0 0 10px 0; color: #2c3e50; font-size: 22px; }
-        .mascota-badge { display: inline-block; padding: 5px 12px; border-radius: 15px; font-size: 12px; font-weight: bold; background: #e8f4f8; color: #007bff; margin-bottom: 15px;}
-        .mascota-info { font-size: 14px; color: #555; margin: 5px 0; display: flex; justify-content: space-between; border-bottom: 1px solid #eee; padding-bottom: 5px;}
-        .mascota-img { width: 100%; height: 220px; object-fit: cover; border-radius: 8px; margin-bottom: 15px; }
-        .mascota-img-placeholder { width: 100%; height: 220px; background: #eee; border-radius: 8px; margin-bottom: 15px; display: flex; align-items: center; justify-content: center; color: #999; }
+        /* ── HERO ── */
+        .hero {
+            text-align: center;
+            padding: 10px 0 44px;
+        }
+        .hero-pill {
+            display: inline-block;
+            background: rgba(232,201,122,0.3);
+            color: var(--accent2);
+            border: 1px solid rgba(212,149,106,0.3);
+            border-radius: 50px;
+            padding: 5px 16px;
+            font-size: 12px;
+            font-weight: 500;
+            letter-spacing: 0.06em;
+            margin-bottom: 18px;
+        }
+        .hero h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 46px;
+            font-weight: 700;
+            color: var(--text);
+            line-height: 1.18;
+            margin-bottom: 14px;
+        }
+        .hero h2 span { color: var(--accent); }
+        .hero p {
+            color: var(--muted);
+            font-size: 16px;
+            max-width: 460px;
+            margin: 0 auto 32px;
+            line-height: 1.65;
+        }
 
-        /* Estilo de la barra de filtros */
-        .filtro-bar { display: flex; gap: 15px; background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 20px; }
-        .filtro-bar input, .filtro-bar select { padding: 10px; border: 1px solid #ccc; border-radius: 5px; flex: 1; }
+        /* ── SECTION HEADER ── */
+        .section-header {
+            display: flex;
+            align-items: baseline;
+            gap: 12px;
+            margin-bottom: 28px;
+            padding-bottom: 16px;
+            border-bottom: 1.5px solid var(--border);
+        }
+        .section-header h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 26px;
+            font-weight: 700;
+            color: var(--text);
+        }
+        .section-header span { color: var(--muted); font-size: 13px; }
+
+        /* ── FILTER BAR ── */
+        .filtro-bar {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 30px;
+        }
+        .filtro-bar input,
+        .filtro-bar select {
+            background: var(--surface);
+            border: 1.5px solid var(--border);
+            color: var(--text);
+            padding: 11px 16px;
+            border-radius: 50px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 13.5px;
+            flex: 1;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .filtro-bar input:focus, .filtro-bar select:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(212,149,106,0.12);
+        }
+        .filtro-bar input::placeholder { color: var(--muted); }
+        .filtro-bar select option { background: #fff; }
+
+        /* ── CATALOG GRID ── */
+        .catalogo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+            gap: 22px;
+        }
+
+        .mascota-card {
+            background: var(--surface);
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+            box-shadow: var(--shadow);
+        }
+        .mascota-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 28px rgba(180,100,40,0.14);
+        }
+        .mascota-card-img-wrap {
+            position: relative;
+            height: 220px;
+            overflow: hidden;
+            background: var(--surface3);
+        }
+        .mascota-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            transition: transform 0.4s ease;
+        }
+        .mascota-card:hover .mascota-img { transform: scale(1.05); }
+        .mascota-img-placeholder {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--muted);
+            font-size: 13px;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .mascota-img-placeholder::before { content: '📷'; font-size: 30px; opacity: 0.35; }
+
+        .mascota-status-badge {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            padding: 5px 12px;
+            border-radius: 50px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        .badge-disponible { background: #5a9e6f; color: #fff; }
+        .badge-proceso    { background: #e8c97a; color: #6b4000; }
+
+        .mascota-card-body { padding: 18px 20px 20px; }
+        .mascota-card-body h3 {
+            font-family: 'Playfair Display', serif;
+            font-size: 21px;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 4px;
+        }
+        .mascota-raza-tag {
+            display: inline-block;
+            font-size: 11.5px;
+            color: var(--accent2);
+            background: rgba(212,149,106,0.1);
+            border: 1px solid rgba(212,149,106,0.22);
+            padding: 3px 10px;
+            border-radius: 50px;
+            margin-bottom: 14px;
+        }
+
+        .mascota-attrs {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+        .attr-pill {
+            background: var(--surface2);
+            border-radius: var(--radius-sm);
+            padding: 7px 6px;
+            text-align: center;
+            border: 1px solid var(--border);
+        }
+        .attr-pill .label {
+            display: block;
+            font-size: 10px;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 2px;
+        }
+        .attr-pill .value {
+            display: block;
+            font-size: 12.5px;
+            font-weight: 500;
+            color: var(--text);
+        }
+        .mascota-card-actions { display: flex; gap: 8px; }
+        .mascota-card-actions button { flex: 1; padding: 9px 10px; font-size: 12.5px; }
+
+        /* ── AUTH ── */
+        .auth-container {
+            background: var(--surface);
+            border: 1.5px solid var(--border);
+            padding: 42px;
+            border-radius: var(--radius);
+            max-width: 420px;
+            margin: 60px auto;
+            box-shadow: var(--shadow);
+        }
+        .auth-container h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 30px;
+            font-weight: 700;
+            margin-bottom: 6px;
+            color: var(--text);
+        }
+        .auth-container p { color: var(--muted); font-size: 13.5px; margin-bottom: 28px; }
+        .auth-container input {
+            width: 100%;
+            padding: 12px 16px;
+            background: var(--surface2);
+            border: 1.5px solid var(--border);
+            border-radius: 50px;
+            color: var(--text);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 14px;
+            margin-bottom: 12px;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .auth-container input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(212,149,106,0.12);
+        }
+        .auth-container input::placeholder { color: var(--muted); }
+        .auth-container .btn-primary { width: 100%; padding: 13px; font-size: 15px; margin-top: 4px; }
+        .auth-link { text-align: center; margin-top: 20px; font-size: 13px; color: var(--muted); }
+        .auth-link a { color: var(--accent); text-decoration: none; font-weight: 500; }
+
+        /* ── PANEL ── */
+        .panel-card {
+            background: var(--surface);
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius);
+            padding: 28px;
+            margin-bottom: 32px;
+            box-shadow: var(--shadow);
+        }
+        .panel-card h3 {
+            font-family: 'Playfair Display', serif;
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--accent2);
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 1.5px solid var(--border);
+        }
+
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+        .form-grid input,
+        .form-grid select,
+        .form-grid textarea,
+        form input, form select, form textarea {
+            background: var(--surface2);
+            border: 1.5px solid var(--border);
+            color: var(--text);
+            padding: 10px 14px;
+            border-radius: var(--radius-sm);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 13.5px;
+            width: 100%;
+            transition: border-color 0.2s;
+        }
+        .form-grid input:focus, .form-grid select:focus,
+        .form-grid textarea:focus, form input:focus,
+        form select:focus, form textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(212,149,106,0.1);
+        }
+        .form-grid input::placeholder, .form-grid textarea::placeholder,
+        form input::placeholder, form textarea::placeholder { color: var(--muted); }
+        .form-grid select option, form select option { background: #fff; }
+
+        /* ── TABLES ── */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--surface);
+            border-radius: var(--radius);
+            overflow: hidden;
+            border: 1.5px solid var(--border);
+            box-shadow: var(--shadow);
+        }
+        .data-table thead tr { background: var(--surface3); }
+        .data-table thead th {
+            padding: 14px 16px;
+            text-align: left;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+            color: var(--muted);
+        }
+        .data-table tbody tr { border-top: 1px solid var(--border); transition: background 0.15s; }
+        .data-table tbody tr:hover { background: rgba(232,201,122,0.08); }
+        .data-table tbody td { padding: 13px 16px; font-size: 13.5px; color: var(--text); vertical-align: middle; }
+
+        .status-chip {
+            display: inline-block;
+            padding: 4px 11px;
+            border-radius: 50px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        .chip-disponible { background: rgba(90,158,111,0.12); color: #3d7a53; border: 1px solid rgba(90,158,111,0.3); }
+        .chip-proceso    { background: rgba(232,201,122,0.25); color: #7a5a00; border: 1px solid rgba(200,160,60,0.3); }
+        .chip-adoptado   { background: rgba(91,143,201,0.12); color: #2f5f9a; border: 1px solid rgba(91,143,201,0.3); }
+        .chip-pendiente  { background: rgba(232,201,122,0.25); color: #7a5a00; border: 1px solid rgba(200,160,60,0.3); }
+        .chip-aprobada   { background: rgba(90,158,111,0.12); color: #3d7a53; border: 1px solid rgba(90,158,111,0.3); }
+        .chip-rechazada  { background: rgba(224,92,92,0.1);   color: #b03030; border: 1px solid rgba(224,92,92,0.25); }
+
+        /* ── ADOPTION FORM ── */
+        .form-label {
+            display: block;
+            font-size: 12.5px;
+            font-weight: 500;
+            color: var(--muted);
+            margin-bottom: 7px;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+        .form-field { margin-bottom: 22px; }
+        .form-field select, .form-field input, .form-field textarea {
+            width: 100%;
+            background: var(--surface2);
+            border: 1.5px solid var(--border);
+            color: var(--text);
+            padding: 11px 14px;
+            border-radius: var(--radius-sm);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 14px;
+            transition: border-color 0.2s;
+        }
+        .form-field select:focus, .form-field input:focus, .form-field textarea:focus {
+            outline: none; border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(212,149,106,0.1);
+        }
+        .form-field textarea::placeholder, .form-field input::placeholder { color: var(--muted); }
+        .form-field select option { background: #fff; }
+
+        /* ── PROFILE ── */
+        .profile-grid { display: grid; grid-template-columns: 380px 1fr; gap: 28px; }
+        .avatar-wrap {
+            width: 92px; height: 92px;
+            border-radius: 50%;
+            background: var(--surface3);
+            border: 2.5px solid var(--accent);
+            overflow: hidden;
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 20px;
+            color: var(--muted); font-size: 12px;
+        }
+        .avatar-wrap img { width: 100%; height: 100%; object-fit: cover; }
+
+        .solicitud-item {
+            background: var(--surface);
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius);
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 12px;
+            box-shadow: var(--shadow);
+            transition: box-shadow 0.2s;
+        }
+        .solicitud-item:hover { box-shadow: 0 6px 18px rgba(180,100,40,0.12); }
+
+        /* ── FILE INPUT ── */
+        input[type="file"] {
+            background: var(--surface2) !important;
+            border: 1.5px dashed rgba(212,149,106,0.4) !important;
+            color: var(--muted);
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 11px 16px;
+            background: var(--surface);
+            border: 1.5px solid var(--border);
+            color: var(--text);
+            border-radius: 50px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 13.5px;
+            margin-bottom: 18px;
+            transition: border-color 0.2s;
+            box-shadow: var(--shadow);
+        }
+        .search-input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(212,149,106,0.12); }
+        .search-input::placeholder { color: var(--muted); }
+
+        .back-btn { margin-bottom: 24px; }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--muted);
+            font-size: 14px;
+        }
+        .empty-state::before { content: '🐾'; font-size: 36px; display: block; margin-bottom: 12px; opacity: 0.45; }
+
+        /* ── DECORATIVE DOTS ── */
+        .hero-dots {
+            position: absolute;
+            pointer-events: none;
+            opacity: 0.18;
+        }
+
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg); }
+        ::-webkit-scrollbar-thumb { background: var(--surface3); border-radius: 3px; }
+
+        @media (max-width: 700px) {
+            .navbar { padding: 0 18px; }
+            .vista { padding: 24px 18px; }
+            .form-grid { grid-template-columns: 1fr; }
+            .profile-grid { grid-template-columns: 1fr; }
+            .mascota-attrs { grid-template-columns: 1fr 1fr; }
+            .filtro-bar { flex-direction: column; }
+        }
     </style>
 </head>
 <body>
 
     <nav class="navbar">
-        <div class="navbar-brand">AdoptMe</div>
+        <a class="navbar-brand" href="#" onclick="cambiarVista('vista-catalogo'); return false;">
+            <svg height="46" viewBox="0 0 520 180" xmlns="http://www.w3.org/2000/svg" aria-label="AdoptMe">
+                <style>
+                    .lhf { fill: #fdf0e0; }
+                    .lhs { fill: none; stroke: #c07a50; stroke-width: 5; stroke-linejoin: round; stroke-linecap: round; }
+                    .ldr { fill: #c07a50; }
+                    .lbr { font-family: 'Playfair Display', Georgia, serif; font-weight: 700; fill: #3b2a1a; font-size: 78px; }
+                </style>
+                <!-- cuerpo casa -->
+                <rect class="lhf" x="14" y="88" width="130" height="82" rx="5"/>
+                <rect class="lhs" x="14" y="88" width="130" height="82" rx="5"/>
+                <!-- techo -->
+                <polygon class="lhf" points="4,92 79,26 154,92"/>
+                <polyline class="lhs" points="4,92 79,26 154,92"/>
+                <!-- oreja izq -->
+                <polygon class="lhf" points="18,72 38,28 58,72"/>
+                <polyline class="lhs" points="18,72 38,28 58,72"/>
+                <!-- oreja der -->
+                <polygon class="lhf" points="100,72 120,28 140,72"/>
+                <polyline class="lhs" points="100,72 120,28 140,72"/>
+                <!-- boca: puerta -->
+                <path class="ldr" d="M54,170 L54,130 Q79,114 104,130 L104,170 Z"/>
+                <!-- nariz: corazón -->
+                <g transform="translate(79,122)">
+                    <path fill="#cc1f1f" d="M0,14 C-2,9 -14,3 -14,-6 C-14,-14 -6,-18 0,-12 C6,-18 14,-14 14,-6 C14,3 2,9 0,14Z"/>
+                </g>
+                <!-- nombre -->
+                <text class="lbr" x="174" y="150">AdoptMe</text>
+            </svg>
+        </a>
         <div class="nav-links" id="menu-navegacion"></div>
     </nav>
 
+    <!-- ── LOGIN ── -->
     <div id="vista-login" class="vista">
         <div class="auth-container">
-            <h2>Iniciar Sesión</h2>
+            <h2>Bienvenido</h2>
+            <p>Inicia sesión para continuar con tu proceso de adopción</p>
             <form id="form-login">
                 <input type="email" id="login-email" placeholder="Correo electrónico" required>
                 <input type="password" id="login-password" placeholder="Contraseña" required>
-                <button type="submit" class="btn-primary" style="width: 100%; margin-top: 15px;">Entrar</button>
+                <button type="submit" class="btn-primary">Iniciar sesión</button>
             </form>
-            <p style="margin-top: 15px; font-size: 14px;">¿No tienes cuenta? <a href="#">Regístrate aquí</a></p>
+            <p class="auth-link">¿No tienes cuenta? <a href="#" onclick="cambiarVista('vista-registro')">Regístrate aquí</a></p>
         </div>
     </div>
 
+    <div id="vista-registro" class="vista">
+        <div class="auth-container">
+            <h2>Crear cuenta</h2>
+            <p>Únete a AdoptMe y empieza a buscar a tu compañero ideal</p>
+            <form id="form-registro">
+                <input type="text" id="reg-nombre" placeholder="Nombre(s)" required>
+                <input type="text" id="reg-paterno" placeholder="Apellido Paterno" required>
+                <input type="email" id="reg-email" placeholder="Correo electrónico" required>
+                <input type="password" id="reg-password" placeholder="Contraseña" required>
+                <button type="submit" class="btn-primary">Registrarse</button>
+            </form>
+            <p class="auth-link">¿Ya tienes cuenta? <a href="#" onclick="cambiarVista('vista-login'); return false;">Inicia sesión aquí</a></p>
+        </div>
+    </div>
+
+    <!-- ── CATÁLOGO ── -->
     <div id="vista-catalogo" class="vista activa">
-        <h2 style="border-bottom: 2px solid #eee; padding-bottom: 10px;">🐾 Nuestros peludos buscando hogar</h2>
-        
+        <div class="hero">
+            <div class="hero-pill" style="font-size:20px; padding:10px 20px;">🐾 Adopciones responsables</div>
+            <h2>Cada peludo merece<br><span>un hogar con amor</span></h2>
+            <p>Explora a nuestros peludos que esperan una familia. Filtra por especie o nombre para encontrar a tu compañero ideal.</p>
+        </div>
+
         <div class="filtro-bar">
-            <input type="text" id="filtro-texto-publico" placeholder="🔍 Buscar por nombre o raza..." oninput="filtrarCatalogoPublico()">
+            <input type="text" id="filtro-texto-publico" placeholder="🔍  Buscar por nombre o raza..." oninput="filtrarCatalogoPublico()">
             <select id="filtro-especie-publico" onchange="filtrarCatalogoPublico()">
                 <option value="">Todas las especies</option>
                 <option value="Perro">Perros</option>
@@ -77,166 +627,177 @@
         <div id="contenedor-tarjetas" class="catalogo-grid"></div>
     </div>
 
+    <!-- ── ADMIN MASCOTAS ── -->
     <div id="vista-admin" class="vista">
-        <h2 style="border-bottom: 2px solid #eee; padding-bottom: 10px;">🐶 Panel de Mascotas</h2>
-        
-        <h3>Registrar Nueva Mascota</h3>
-        <form id="form-mascota" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; background: white; padding: 25px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 40px;" enctype="multipart/form-data">
-            <input type="text" id="mascota-nombre" placeholder="Nombre" required style="padding: 10px; border: 1px solid #ccc; border-radius: 5px;">
-            <select id="mascota-especie" required style="padding: 10px; border: 1px solid #ccc; border-radius: 5px;">
-                <option value="">Especie...</option>
-                <option value="Perro">Perro</option>
-                <option value="Gato">Gato</option>
-                <option value="Otro">Otro</option>
-            </select>
-            <input type="text" id="mascota-raza" placeholder="Raza (Ej. Mestizo)" required style="padding: 10px; border: 1px solid #ccc; border-radius: 5px;">
-            <input type="date" id="mascota-fecha" required title="Fecha de nacimiento aprox." style="padding: 10px; border: 1px solid #ccc; border-radius: 5px;">
-            <select id="mascota-tamano" required style="padding: 10px; border: 1px solid #ccc; border-radius: 5px;">
-                <option value="">Tamaño...</option>
-                <option value="Chico">Chico</option>
-                <option value="Mediano">Mediano</option>
-                <option value="Grande">Grande</option>
-            </select>
-            <select id="mascota-sexo" required style="padding: 10px; border: 1px solid #ccc; border-radius: 5px;">
-                <option value="">Sexo...</option>
-                <option value="Macho">Macho</option>
-                <option value="Hembra">Hembra</option>
-            </select>
-            <select id="mascota-energia" required style="padding: 10px; border: 1px solid #ccc; border-radius: 5px;">
-                <option value="">Nivel de Energía...</option>
-                <option value="Baja">Baja</option>
-                <option value="Media">Media</option>
-                <option value="Alta">Alta</option>
-            </select>
-            <input type="text" id="mascota-salud" placeholder="Estado de Salud (Ej. Vacunado)" required style="padding: 10px; border: 1px solid #ccc; border-radius: 5px;">
-            <input type="file" id="mascota-foto" accept="image/*" style="grid-column: span 2; padding: 10px; border: 1px dashed #007bff; border-radius: 5px; background-color: #f8f9fa;">
-            <button type="submit" class="btn-primary" style="grid-column: span 2; padding: 12px; font-size: 16px;">Guardar Mascota</button>
-        </form>
+        <div class="section-header">
+            <h2>Panel de mascotas</h2>
+            <span>Gestión del refugio</span>
+        </div>
 
-        <h3>Base de Datos de Mascotas</h3>
-        
-        <input type="text" id="filtro-texto-admin" placeholder="🔍 Buscar por ID, nombre o raza..." oninput="filtrarAdminMascotas()" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; margin-bottom: 15px; box-sizing: border-box;">
-        
-        <table style="width: 100%; border-collapse: collapse; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 40px;">
+        <div class="panel-card">
+            <h3>Registrar nueva mascota</h3>
+            <form id="form-mascota" enctype="multipart/form-data">
+                <div class="form-grid">
+                    <input type="text" id="mascota-nombre" placeholder="Nombre" required>
+                    <select id="mascota-especie" required>
+                        <option value="">Especie…</option>
+                        <option value="Perro">Perro</option>
+                        <option value="Gato">Gato</option>
+                        <option value="Otro">Otro</option>
+                    </select>
+                    <input type="text" id="mascota-raza" placeholder="Raza" required>
+                    <input type="date" id="mascota-fecha" required title="Fecha de nacimiento aprox.">
+                    <select id="mascota-tamano" required>
+                        <option value="">Tamaño…</option>
+                        <option value="Chico">Chico</option>
+                        <option value="Mediano">Mediano</option>
+                        <option value="Grande">Grande</option>
+                    </select>
+                    <select id="mascota-sexo" required>
+                        <option value="">Sexo…</option>
+                        <option value="Macho">Macho</option>
+                        <option value="Hembra">Hembra</option>
+                    </select>
+                    <select id="mascota-energia" required>
+                        <option value="">Nivel de energía…</option>
+                        <option value="Baja">Baja</option>
+                        <option value="Media">Media</option>
+                        <option value="Alta">Alta</option>
+                    </select>
+                    <input type="text" id="mascota-salud" placeholder="Estado de salud (ej. Vacunado)" required>
+                    <div style="grid-column:span 2;">
+                        <input type="file" id="mascota-foto" accept="image/*" style="width:100%;padding:10px;border-radius:8px;">
+                    </div>
+                    <div style="grid-column:span 2;">
+                        <button type="submit" class="btn-primary" style="width:100%;padding:13px;font-size:15px;border-radius:50px;">Guardar mascota</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <div class="section-header">
+            <h2>Base de datos</h2>
+        </div>
+
+        <input type="text" id="filtro-texto-admin" class="search-input" placeholder="🔍  Buscar por ID, nombre o raza…" oninput="filtrarAdminMascotas()">
+
+        <table class="data-table" style="margin-bottom:40px;">
             <thead>
-                <tr style="background-color: #34495e; color: white; text-align: left;">
-                    <th style="padding: 15px;">Foto</th>
-                    <th style="padding: 15px;">ID</th>
-                    <th style="padding: 15px;">Nombre</th>
-                    <th style="padding: 15px;">Especie</th>
-                    <th style="padding: 15px;">Estado</th>
-                    <th style="padding: 15px;">Acciones</th>
+                <tr>
+                    <th>Foto</th><th>ID</th><th>Nombre</th><th>Especie</th><th>Estado</th><th>Acciones</th>
                 </tr>
             </thead>
             <tbody id="tabla-mascotas-admin"></tbody>
         </table>
     </div>
 
+    <!-- ── SOLICITUDES ── -->
     <div id="vista-solicitudes" class="vista">
-        <h2 style="border-bottom: 2px solid #eee; padding-bottom: 10px;">📋 Revisión de Solicitudes</h2>
-        <table style="width: 100%; border-collapse: collapse; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+        <div class="section-header">
+            <h2>Revisión de solicitudes</h2>
+            <span>Estudio socioambiental</span>
+        </div>
+        <table class="data-table">
             <thead>
-                <tr style="background-color: #2c3e50; color: white; text-align: left;">
-                    <th style="padding: 15px;">ID Solicitud</th>
-                    <th style="padding: 15px;">Adoptante</th>
-                    <th style="padding: 15px;">Mascota</th>
-                    <th style="padding: 15px;">Respuestas de Estudio Socioambiental</th>
-                    <th style="padding: 15px;">Dictamen</th>
-                    <th style="padding: 15px;">Acciones</th>
+                <tr>
+                    <th>Folio</th><th>Adoptante</th><th>Mascota</th><th>Respuestas</th><th>Dictamen</th><th>Acciones</th>
                 </tr>
             </thead>
             <tbody id="tabla-solicitudes-admin"></tbody>
         </table>
     </div>
 
+    <!-- ── FORMULARIO ADOPCIÓN ── -->
     <div id="vista-formulario" class="vista">
-        <button class="btn-outline" onclick="cambiarVista('vista-catalogo')" style="margin-bottom: 20px;">← Volver al Catálogo</button>
-        <div style="background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); max-width: 800px; margin: auto;">
-            <h2 id="titulo-formulario" style="border-bottom: 2px solid #eee; padding-bottom: 10px; margin-top: 0;">Postulación de Adopción</h2>
-            <p style="color: #666; font-size: 14px; margin-bottom: 25px;">Por favor, responde con honestidad. Queremos asegurarnos de que nuestras mascotas vayan al hogar ideal.</p>
-            <form id="form-adopcion" style="display: grid; grid-template-columns: 1fr; gap: 20px;">
+        <div class="back-btn">
+            <button class="btn-outline" onclick="cambiarVista('vista-catalogo')">← Volver al catálogo</button>
+        </div>
+        <div class="panel-card" style="max-width:680px;margin:auto;">
+            <h3 id="titulo-formulario">Postulación de adopción</h3>
+            <p style="color:var(--muted);font-size:13.5px;margin-bottom:28px;line-height:1.65;">
+                Responde con honestidad. Queremos asegurarnos de que nuestras mascotas lleguen al hogar ideal.
+            </p>
+            <form id="form-adopcion">
                 <input type="hidden" id="adopcion-mascota-id">
-                <div>
-                    <label style="font-weight: bold; display: block; margin-bottom: 5px;">1. ¿En qué tipo de vivienda habitas?</label>
-                    <select id="preg-vivienda" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px;">
-                        <option value="">Selecciona...</option>
+                <div class="form-field">
+                    <label class="form-label">1. ¿En qué tipo de vivienda habitas?</label>
+                    <select id="preg-vivienda" required>
+                        <option value="">Selecciona…</option>
                         <option value="Casa propia">Casa propia</option>
                         <option value="Casa rentada">Casa rentada</option>
                         <option value="Departamento">Departamento</option>
                     </select>
                 </div>
-                <div>
-                    <label style="font-weight: bold; display: block; margin-bottom: 5px;">2. ¿Tu vivienda cuenta con patio o jardín cercado?</label>
-                    <select id="preg-patio" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px;">
-                        <option value="">Selecciona...</option>
+                <div class="form-field">
+                    <label class="form-label">2. ¿Tu vivienda cuenta con patio o jardín cercado?</label>
+                    <select id="preg-patio" required>
+                        <option value="">Selecciona…</option>
                         <option value="Sí, grande">Sí, grande</option>
                         <option value="Sí, pequeño">Sí, pequeño</option>
                         <option value="No">No</option>
                     </select>
                 </div>
-                <div>
-                    <label style="font-weight: bold; display: block; margin-bottom: 5px;">3. ¿Cuántas horas en promedio pasará la mascota sola al día?</label>
-                    <input type="number" id="preg-horas" min="0" max="24" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box;">
+                <div class="form-field">
+                    <label class="form-label">3. ¿Cuántas horas pasará solo al día?</label>
+                    <input type="number" id="preg-horas" min="0" max="24" required placeholder="Ej. 4">
                 </div>
-                <div>
-                    <label style="font-weight: bold; display: block; margin-bottom: 5px;">4. ¿Tienes otras mascotas actualmente?</label>
-                    <textarea id="preg-otras-mascotas" placeholder="Especifica especie, edad y carácter" required rows="3" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; font-family: inherit;"></textarea>
+                <div class="form-field">
+                    <label class="form-label">4. ¿Tienes otras mascotas actualmente?</label>
+                    <textarea id="preg-otras-mascotas" placeholder="Especifica especie, edad y carácter…" required rows="3"></textarea>
                 </div>
-                <button type="submit" class="btn-primary" style="padding: 15px; font-size: 16px; margin-top: 10px;">Enviar Solicitud de Adopción</button>
+                <button type="submit" class="btn-primary" style="width:100%;padding:13px;font-size:15px;border-radius:50px;margin-top:8px;">
+                    Enviar solicitud de adopción
+                </button>
             </form>
         </div>
     </div>
 
-<div id="vista-perfil" class="vista">
-        <h2 style="border-bottom: 2px solid #eee; padding-bottom: 10px;">👤 Mi Perfil y Trámites</h2>
-        
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 20px;">
-            
-            <div style="background: white; padding: 25px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
-                <div style="text-align: center; margin-bottom: 20px;">
-                    <img id="perfil-foto-preview" src="" alt="Foto de perfil" style="width: 120px; height: 120px; border-radius: 50%; object-fit: cover; background-color: #eee; border: 3px solid #007bff; display: none; margin: 0 auto;">
-                    <div id="perfil-foto-placeholder" style="width: 120px; height: 120px; border-radius: 50%; background-color: #eee; color: #999; display: flex; align-items: center; justify-content: center; margin: 0 auto; font-size: 12px;">Sin Foto</div>
+    <!-- ── PERFIL ── -->
+    <div id="vista-perfil" class="vista">
+        <div class="section-header">
+            <h2>Mi perfil</h2>
+            <span>Datos y trámites</span>
+        </div>
+        <div class="profile-grid">
+            <div class="panel-card">
+                <h3>Datos personales</h3>
+                <div class="avatar-wrap">
+                    <img id="perfil-foto-preview" src="" alt="Foto de perfil" style="display:none;">
+                    <div id="perfil-foto-placeholder" style="font-size:12px;color:var(--muted);">Sin foto</div>
                 </div>
-
-                <form id="form-perfil" style="display: grid; grid-template-columns: 1fr; gap: 15px;" enctype="multipart/form-data">
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                        <input type="text" id="perfil-nombre" placeholder="Nombre(s)" required style="padding: 10px; border: 1px solid #ccc; border-radius: 5px;">
-                        <input type="text" id="perfil-paterno" placeholder="Apellido Paterno" required style="padding: 10px; border: 1px solid #ccc; border-radius: 5px;">
+                <form id="form-perfil" enctype="multipart/form-data">
+                    <div class="form-grid">
+                        <input type="text" id="perfil-nombre" placeholder="Nombre(s)" required>
+                        <input type="text" id="perfil-paterno" placeholder="Apellido paterno" required>
+                        <input type="text" id="perfil-materno" placeholder="Apellido materno">
+                        <input type="number" id="perfil-edad" placeholder="Edad" min="18">
+                        <input type="text" id="perfil-telefono" placeholder="Teléfono" style="grid-column:span 2;">
+                        <textarea id="perfil-direccion" placeholder="Dirección completa" rows="2" style="grid-column:span 2;resize:vertical;"></textarea>
+                        <div style="grid-column:span 2;">
+                            <p style="font-size:12px;color:var(--muted);margin-bottom:8px;">Actualizar foto de perfil</p>
+                            <input type="file" id="perfil-foto" accept="image/*" style="width:100%;border-radius:8px;">
+                        </div>
+                        <div style="grid-column:span 2;">
+                            <button type="submit" class="btn-primary" style="width:100%;padding:12px;font-size:15px;border-radius:50px;">Guardar cambios</button>
+                        </div>
                     </div>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                        <input type="text" id="perfil-materno" placeholder="Apellido Materno" style="padding: 10px; border: 1px solid #ccc; border-radius: 5px;">
-                        <input type="number" id="perfil-edad" placeholder="Edad" min="18" style="padding: 10px; border: 1px solid #ccc; border-radius: 5px;">
-                    </div>
-                    <input type="text" id="perfil-telefono" placeholder="Teléfono" style="padding: 10px; border: 1px solid #ccc; border-radius: 5px;">
-                    <textarea id="perfil-direccion" placeholder="Dirección completa" rows="2" style="padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-family: inherit;"></textarea>
-                    
-                    <label style="font-size: 14px; font-weight: bold; color: #555;">Actualizar Foto de Perfil:</label>
-                    <input type="file" id="perfil-foto" accept="image/*" style="padding: 10px; border: 1px dashed #007bff; border-radius: 5px; background-color: #f8f9fa;">
-                    
-                    <button type="submit" class="btn-primary" style="padding: 12px; font-size: 16px; margin-top: 10px;">Guardar Cambios</button>
                 </form>
             </div>
-
             <div>
-                <h3 style="margin-top: 0;">Mis Solicitudes de Adopción</h3>
-                <div id="contenedor-mis-solicitudes" style="display: flex; flex-direction: column; gap: 15px;">
-                    </div>
+                <h3 style="font-family:'Playfair Display',serif;font-size:20px;font-weight:700;margin-bottom:18px;color:var(--text);">Mis solicitudes</h3>
+                <div id="contenedor-mis-solicitudes"></div>
             </div>
-
         </div>
     </div>
 
 <script>
-    // CACHÉ DE DATOS PARA FILTRADO RÁPIDO
     let mascotasCache = [];
 
-    // --- 1. LÓGICA DE NAVEGACIÓN Y ESTADO ---
     function cambiarVista(idVista) {
         document.querySelectorAll('.vista').forEach(el => el.classList.remove('activa'));
         document.getElementById(idVista).classList.add('activa');
-        
-        if(idVista === 'vista-admin') cargarMascotasGlobales('admin'); 
-        if(idVista === 'vista-solicitudes') cargarSolicitudesAdmin(); 
+        if(idVista === 'vista-admin') cargarMascotasGlobales('admin');
+        if(idVista === 'vista-solicitudes') cargarSolicitudesAdmin();
         if(idVista === 'vista-catalogo') cargarMascotasGlobales('publico');
         if(idVista === 'vista-perfil') cargarPerfilUsuario();
     }
@@ -245,34 +806,28 @@
         const token = localStorage.getItem('token');
         const rol = localStorage.getItem('rol');
         const menu = document.getElementById('menu-navegacion');
-        
-        // 1. Botón del catálogo
-        let botonesHTML = `<button class="btn-outline" onclick="cambiarVista('vista-catalogo')">Ver Mascotas</button>`;
-        
-        // 2. NUEVO: Botón global de Agendar Cita (Abre Calendly en otra pestaña)
-        botonesHTML += `<button class="btn-outline" style="border-color: #17a2b8; color: #17a2b8; margin-left: 10px;" onclick="window.open('https://calendly.com/adoptme-infra/visita', '_blank')">📅 Agendar Cita</button>`;
 
-        // 3. Lógica de sesión (Login, Perfil, Admin, Salir)
+        let botonesHTML = `<button class="btn-outline" onclick="cambiarVista('vista-catalogo')">Ver mascotas</button>`;
+        botonesHTML += `<button class="btn-teal" style="margin-left:8px;" onclick="window.open('https://calendly.com/adoptme-infra/visita','_blank')">📅 Agendar cita</button>`;
+
         if (!token) {
-            botonesHTML += `<button class="btn-primary" style="margin-left: 10px;" onclick="cambiarVista('vista-login')">Iniciar Sesión</button>`;
+            botonesHTML += `<button class="btn-primary" style="margin-left:8px;" onclick="cambiarVista('vista-login')">Iniciar sesión</button>`;
         } else {
             if (rol === 'admin') {
-                botonesHTML += `<button class="btn-primary" style="margin-left: 10px;" onclick="cambiarVista('vista-admin')">🐶 Panel Mascotas</button>`;
-                botonesHTML += `<button class="btn-primary" style="background-color: #17a2b8; margin-left: 10px;" onclick="cambiarVista('vista-solicitudes')">📋 Solicitudes</button>`;
+                botonesHTML += `<button class="btn-primary" style="margin-left:8px;" onclick="cambiarVista('vista-admin')">Panel mascotas</button>`;
+                botonesHTML += `<button class="btn-blue" style="margin-left:8px;" onclick="cambiarVista('vista-solicitudes')">Solicitudes</button>`;
             } else {
-                botonesHTML += `<button class="btn-primary" style="margin-left: 10px;" onclick="cambiarVista('vista-perfil')">👤 Mi Perfil</button>`;
+                botonesHTML += `<button class="btn-primary" style="margin-left:8px;" onclick="cambiarVista('vista-perfil')">Mi perfil</button>`;
             }
-            botonesHTML += `<button class="btn-danger" style="margin-left: 10px;" onclick="cerrarSesion()">Salir</button>`;
+            botonesHTML += `<button class="btn-danger" style="margin-left:8px;" onclick="cerrarSesion()">Salir</button>`;
         }
         menu.innerHTML = botonesHTML;
     }
 
-    // --- 2. LÓGICA DE AUTENTICACIÓN ---
     document.getElementById('form-login').addEventListener('submit', async (e) => {
         e.preventDefault();
         const email = document.getElementById('login-email').value;
         const password = document.getElementById('login-password').value;
-
         try {
             const respuesta = await fetch('/login', {
                 method: 'POST',
@@ -280,7 +835,6 @@
                 body: JSON.stringify({ email, password })
             });
             const datos = await respuesta.json();
-
             if (respuesta.ok) {
                 localStorage.setItem('token', datos.token);
                 localStorage.setItem('rol', datos.rol);
@@ -289,12 +843,8 @@
                 actualizarNavegacion();
                 if (datos.rol === 'admin') cambiarVista('vista-admin');
                 else cambiarVista('vista-catalogo');
-            } else {
-                alert(datos.error);
-            }
-        } catch (error) {
-            alert("Error al conectar con el servidor.");
-        }
+            } else { alert(datos.error); }
+        } catch (error) { alert("Error al conectar con el servidor."); }
     });
 
     function cerrarSesion() {
@@ -304,108 +854,87 @@
         cambiarVista('vista-catalogo');
     }
 
-    // --- 3. EXTRACCIÓN DE DATOS Y FILTROS ---
     async function cargarMascotasGlobales(destino) {
         try {
             const respuesta = await fetch('/mascotas');
-            mascotasCache = await respuesta.json(); // Guardamos los datos en la memoria del navegador
-            
+            mascotasCache = await respuesta.json();
             if (destino === 'admin') filtrarAdminMascotas();
             if (destino === 'publico') filtrarCatalogoPublico();
-        } catch (error) {
-            console.error("Error al cargar datos:", error);
-        }
+        } catch (error) { console.error("Error al cargar datos:", error); }
     }
 
-    // Filtrado en la vista pública
     function filtrarCatalogoPublico() {
         const textoBusqueda = document.getElementById('filtro-texto-publico').value.toLowerCase();
         const filtroEspecie = document.getElementById('filtro-especie-publico').value;
         const contenedor = document.getElementById('contenedor-tarjetas');
         contenedor.innerHTML = '';
 
-        // Excluimos las adoptadas
         let filtradas = mascotasCache.filter(m => m.estado_adopcion !== 'adoptado');
-
-        // Filtro por texto (Nombre o Raza)
-        if (textoBusqueda) {
-            filtradas = filtradas.filter(m => 
-                m.nombre.toLowerCase().includes(textoBusqueda) || 
-                m.raza.toLowerCase().includes(textoBusqueda)
-            );
-        }
-
-        // Filtro por dropdown de especie
-        if (filtroEspecie) {
-            filtradas = filtradas.filter(m => m.especie === filtroEspecie);
-        }
+        if (textoBusqueda) filtradas = filtradas.filter(m => m.nombre.toLowerCase().includes(textoBusqueda) || m.raza.toLowerCase().includes(textoBusqueda));
+        if (filtroEspecie) filtradas = filtradas.filter(m => m.especie === filtroEspecie);
 
         if (filtradas.length === 0) {
-            contenedor.innerHTML = '<p style="color: #666; width: 100%; text-align: center;">No se encontraron mascotas con esos filtros.</p>';
+            contenedor.innerHTML = '<div class="empty-state" style="grid-column:1/-1;">No se encontraron mascotas con esos filtros.</div>';
             return;
         }
 
-        // Renderizado
         filtradas.forEach(m => {
-            const imagenHtml = m.foto_url ? `<img src="${m.foto_url}" class="mascota-img">` : `<div class="mascota-img-placeholder">Sin foto</div>`;
-            const badgeEspecie = m.estado_adopcion === 'en_proceso'
-                ? `<span class="mascota-badge" style="background: #fff3cd; color: #856404; border: 1px solid #ffeeba;">${m.especie} • Solicitada</span>`
-                : `<span class="mascota-badge">${m.especie} • ${m.raza}</span>`;
+            const imagenHtml = m.foto_url
+                ? `<img src="${m.foto_url}" class="mascota-img" alt="${m.nombre}">`
+                : `<div class="mascota-img-placeholder">Sin foto</div>`;
+            const enProceso = m.estado_adopcion === 'en_proceso';
+            const badgeHtml = enProceso
+                ? `<span class="mascota-status-badge badge-proceso">En proceso</span>`
+                : `<span class="mascota-status-badge badge-disponible">Disponible</span>`;
 
             contenedor.innerHTML += `
                 <div class="mascota-card">
-                    ${imagenHtml}
-                    <h3>${m.nombre}</h3>
-                    ${badgeEspecie}
-                    <div class="mascota-info"><span><strong>Tamaño:</strong></span> <span>${m.tamano}</span></div>
-                    <div class="mascota-info"><span><strong>Sexo:</strong></span> <span>${m.sexo}</span></div>
-                    <div class="mascota-info"><span><strong>Energía:</strong></span> <span>${m.energia}</span></div>
-                    
-                    <div style="display: flex; gap: 10px; margin-top: 20px;">
-                        <button class="btn-outline" style="flex: 1; padding: 10px; font-size: 13px;" onclick="agendarCitaExploratoria('${m.nombre}')">📅 Conocer</button>
-                        <button class="btn-primary" style="flex: 1; padding: 10px; font-size: 13px;" onclick="iniciarAdopcion(${m.id}, '${m.nombre}')">📝 Postularme</button>
+                    <div class="mascota-card-img-wrap">${imagenHtml}${badgeHtml}</div>
+                    <div class="mascota-card-body">
+                        <h3>${m.nombre}</h3>
+                        <span class="mascota-raza-tag">${m.especie} · ${m.raza}</span>
+                        <div class="mascota-attrs">
+                            <div class="attr-pill"><span class="label">Tamaño</span><span class="value">${m.tamano}</span></div>
+                            <div class="attr-pill"><span class="label">Sexo</span><span class="value">${m.sexo}</span></div>
+                            <div class="attr-pill"><span class="label">Energía</span><span class="value">${m.energia}</span></div>
+                        </div>
+                        <div class="mascota-card-actions">
+                            <button class="btn-outline" onclick="agendarCitaExploratoria('${m.nombre}')">📅 Conocer</button>
+                            <button class="btn-primary" onclick="iniciarAdopcion(${m.id}, '${m.nombre}')">📝 Postularme</button>
+                        </div>
                     </div>
-                </div>
-            `;
+                </div>`;
         });
     }
 
-    // Filtrado en la vista de Admin
     function filtrarAdminMascotas() {
         const textoBusqueda = document.getElementById('filtro-texto-admin').value.toLowerCase();
         const tbody = document.getElementById('tabla-mascotas-admin');
-        tbody.innerHTML = ''; 
-
+        tbody.innerHTML = '';
         let filtradas = mascotasCache;
-
-        if (textoBusqueda) {
-            filtradas = filtradas.filter(m => 
-                m.id.toString() === textoBusqueda || 
-                m.nombre.toLowerCase().includes(textoBusqueda) || 
-                m.raza.toLowerCase().includes(textoBusqueda)
-            );
-        }
+        if (textoBusqueda) filtradas = filtradas.filter(m => m.id.toString() === textoBusqueda || m.nombre.toLowerCase().includes(textoBusqueda) || m.raza.toLowerCase().includes(textoBusqueda));
 
         filtradas.forEach(m => {
-            const fotoHtml = m.foto_url ? `<img src="${m.foto_url}" style="width: 40px; height: 40px; object-fit: cover; border-radius: 4px;">` : `<span style="font-size: 10px; color: #999;">Sin foto</span>`;
+            const fotoHtml = m.foto_url
+                ? `<img src="${m.foto_url}" style="width:38px;height:38px;object-fit:cover;border-radius:8px;">`
+                : `<div style="width:38px;height:38px;border-radius:8px;background:var(--surface3);"></div>`;
+            const estadoClass = {'disponible':'chip-disponible','en_proceso':'chip-proceso','adoptado':'chip-adoptado'}[m.estado_adopcion] || 'chip-proceso';
             tbody.innerHTML += `
-                <tr style="border-bottom: 1px solid #eee;">
-                    <td style="padding: 12px;">${fotoHtml}</td>
-                    <td style="padding: 12px;">${m.id}</td>
-                    <td style="padding: 12px;"><strong>${m.nombre}</strong></td>
-                    <td style="padding: 12px;">${m.especie}</td>
-                    <td style="padding: 12px;"><span style="background: #e8f4f8; padding: 5px 10px; border-radius: 15px; font-size: 12px;">${m.estado_adopcion}</span></td>
-                    <td style="padding: 12px;"><button onclick="borrarMascota(${m.id})" class="btn-danger" style="padding: 5px 10px; font-size: 12px;">Borrar</button></td>
+                <tr>
+                    <td>${fotoHtml}</td>
+                    <td style="color:var(--muted);">#${m.id}</td>
+                    <td><strong>${m.nombre}</strong></td>
+                    <td style="color:var(--muted);">${m.especie}</td>
+                    <td><span class="status-chip ${estadoClass}">${m.estado_adopcion}</span></td>
+                    <td><button onclick="borrarMascota(${m.id})" class="btn-danger" style="padding:5px 12px;font-size:12px;border-radius:50px;">Borrar</button></td>
                 </tr>`;
         });
     }
 
-    // --- GUARDAR Y BORRAR MASCOTAS ---
     document.getElementById('form-mascota').addEventListener('submit', async (e) => {
-        e.preventDefault(); 
+        e.preventDefault();
         const token = localStorage.getItem('token');
         const formData = new FormData();
-
         formData.append('nombre', document.getElementById('mascota-nombre').value);
         formData.append('especie', document.getElementById('mascota-especie').value);
         formData.append('raza', document.getElementById('mascota-raza').value);
@@ -414,20 +943,12 @@
         formData.append('sexo', document.getElementById('mascota-sexo').value);
         formData.append('energia', document.getElementById('mascota-energia').value);
         formData.append('salud', document.getElementById('mascota-salud').value);
-
         const inputFoto = document.getElementById('mascota-foto');
         if (inputFoto.files.length > 0) formData.append('foto', inputFoto.files[0]);
-
         try {
             const respuesta = await fetch('/agregar', { method: 'POST', headers: { 'Authorization': token }, body: formData });
-            if(respuesta.ok) {
-                alert("¡Mascota registrada!");
-                document.getElementById('form-mascota').reset();
-                cargarMascotasGlobales('admin'); 
-            } else {
-                const errorData = await respuesta.json();
-                alert("Error: " + errorData.error);
-            }
+            if(respuesta.ok) { alert("¡Mascota registrada!"); document.getElementById('form-mascota').reset(); cargarMascotasGlobales('admin'); }
+            else { const errorData = await respuesta.json(); alert("Error: " + errorData.error); }
         } catch (error) { console.error(error); }
     });
 
@@ -435,11 +956,10 @@
         if(!confirm(`¿Borrar mascota #${id}?`)) return;
         try {
             const respuesta = await fetch(`/mascotas/${id}`, { method: 'DELETE', headers: { 'Authorization': localStorage.getItem('token') } });
-            if(respuesta.ok) cargarMascotasGlobales('admin'); 
+            if(respuesta.ok) cargarMascotasGlobales('admin');
         } catch (error) { console.error(error); }
     }
 
-    // --- PANEL SOLICITUDES ---
     async function cargarSolicitudesAdmin() {
         const token = localStorage.getItem('token');
         try {
@@ -447,33 +967,29 @@
             const solicitudes = await respuesta.json();
             const tbody = document.getElementById('tabla-solicitudes-admin');
             tbody.innerHTML = '';
-
             if (solicitudes.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center;">No hay postulaciones.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--muted);">No hay postulaciones.</td></tr>';
                 return;
             }
-
             solicitudes.forEach(s => {
-                let respuestasHtml = '<ul style="margin: 0; padding-left: 15px; font-size: 13px; color: #555;">';
+                let respuestasHtml = '<ul style="margin:0;padding-left:14px;font-size:12px;color:var(--muted);line-height:1.9;">';
                 for (const [campo, valor] of Object.entries(s.datos_formulario)) {
-                    respuestasHtml += `<li><strong>${campo}:</strong> ${valor}</li>`;
+                    respuestasHtml += `<li><span style="color:var(--accent2);font-weight:500;">${campo}:</span> ${valor}</li>`;
                 }
                 respuestasHtml += '</ul>';
-
-                let accionesHtml = s.estado === 'pendiente' 
-                    ? `<button onclick="resolverSolicitud(${s.id}, 'aprobada')" class="btn-primary" style="padding: 5px; font-size: 11px; background-color: #28a745;">Aprobar</button> <button onclick="resolverSolicitud(${s.id}, 'rechazada')" class="btn-danger" style="padding: 5px; font-size: 11px;">Rechazar</button>`
-                    : `<span style="font-size: 12px; color: #aaa;">Evaluada</span>`;
-
-                let colorBadge = s.estado === 'aprobada' ? '#28a745' : (s.estado === 'rechazada' ? '#dc3545' : '#ffc107');
-
+                let accionesHtml = s.estado === 'pendiente'
+                    ? `<button onclick="resolverSolicitud(${s.id},'aprobada')" class="btn-primary" style="padding:5px 10px;font-size:11px;border-radius:50px;margin-right:4px;">Aprobar</button>
+                       <button onclick="resolverSolicitud(${s.id},'rechazada')" class="btn-danger" style="padding:5px 10px;font-size:11px;border-radius:50px;">Rechazar</button>`
+                    : `<span style="font-size:12px;color:var(--muted);">Evaluada</span>`;
+                const estadoClass = {'aprobada':'chip-aprobada','rechazada':'chip-rechazada','pendiente':'chip-pendiente'}[s.estado] || 'chip-pendiente';
                 tbody.innerHTML += `
-                    <tr style="border-bottom: 1px solid #eee; font-size: 14px;">
-                        <td style="padding: 12px;"><strong>#${s.id}</strong></td>
-                        <td style="padding: 12px;">${s.nombre_usuario}</td>
-                        <td style="padding: 12px;">${s.nombre_mascota}</td>
-                        <td style="padding: 12px;">${respuestasHtml}</td>
-                        <td style="padding: 12px;"><span style="background: ${colorBadge}; color: #fff; padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: bold; text-transform: uppercase;">${s.estado}</span></td>
-                        <td style="padding: 12px;">${accionesHtml}</td>
+                    <tr>
+                        <td style="color:var(--muted);">#${s.id}</td>
+                        <td>${s.nombre_usuario}</td>
+                        <td>${s.nombre_mascota}</td>
+                        <td>${respuestasHtml}</td>
+                        <td><span class="status-chip ${estadoClass}">${s.estado}</span></td>
+                        <td>${accionesHtml}</td>
                     </tr>`;
             });
         } catch (error) { console.error(error); }
@@ -482,13 +998,16 @@
     async function resolverSolicitud(idSolicitud, nuevoEstado) {
         if(!confirm(`¿Marcar como: ${nuevoEstado.toUpperCase()}?`)) return;
         try {
-            const respuesta = await fetch(`/admin/solicitudes/${idSolicitud}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': localStorage.getItem('token') }, body: JSON.stringify({ estado: nuevoEstado }) });
+            const respuesta = await fetch(`/admin/solicitudes/${idSolicitud}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json', 'Authorization': localStorage.getItem('token') },
+                body: JSON.stringify({ estado: nuevoEstado })
+            });
             if (respuesta.ok) cargarSolicitudesAdmin();
             else alert("Error al resolver");
         } catch (error) { console.error(error); }
     }
 
-    // --- FORMULARIO DE ADOPCIÓN ---
     function iniciarAdopcion(mascotaId, nombreMascota) {
         if (!localStorage.getItem('token')) {
             alert("¡Inicia sesión primero!");
@@ -511,26 +1030,23 @@
                 otras_mascotas: document.getElementById('preg-otras-mascotas').value
             }
         };
-
         try {
-            const respuesta = await fetch('/solicitudes', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': localStorage.getItem('token') }, body: JSON.stringify(payload) });
-            if (respuesta.ok) {
-                alert("¡Solicitud enviada!");
-                document.getElementById('form-adopcion').reset();
-                cambiarVista('vista-catalogo');
-            } else alert("Error al enviar");
+            const respuesta = await fetch('/solicitudes', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': localStorage.getItem('token') },
+                body: JSON.stringify(payload)
+            });
+            if (respuesta.ok) { alert("¡Solicitud enviada!"); document.getElementById('form-adopcion').reset(); cambiarVista('vista-catalogo'); }
+            else alert("Error al enviar");
         } catch (error) { console.error(error); }
     });
 
-    // --- 7. LÓGICA DEL PERFIL DE USUARIO ---
     async function cargarPerfilUsuario() {
         const token = localStorage.getItem('token');
         try {
             const respuesta = await fetch('/perfil', { headers: { 'Authorization': token } });
             const datos = await respuesta.json();
-
             if (respuesta.ok) {
-                // 1. Llenar el formulario
                 const u = datos.usuario;
                 document.getElementById('perfil-nombre').value = u.nombre || '';
                 document.getElementById('perfil-paterno').value = u.apellido_paterno || '';
@@ -538,35 +1054,30 @@
                 document.getElementById('perfil-edad').value = u.edad || '';
                 document.getElementById('perfil-telefono').value = u.telefono || '';
                 document.getElementById('perfil-direccion').value = u.direccion || '';
-
-                // Mostrar foto actual si existe
                 if (u.foto_url) {
                     document.getElementById('perfil-foto-preview').src = u.foto_url;
                     document.getElementById('perfil-foto-preview').style.display = 'block';
                     document.getElementById('perfil-foto-placeholder').style.display = 'none';
                 }
-
-                // 2. Renderizar historial de solicitudes
                 const contenedorSolicitudes = document.getElementById('contenedor-mis-solicitudes');
                 contenedorSolicitudes.innerHTML = '';
-
                 if (datos.solicitudes.length === 0) {
-                    contenedorSolicitudes.innerHTML = '<p style="color: #666; background: white; padding: 20px; border-radius: 8px;">Aún no has enviado ninguna postulación. ¡Anímate a adoptar!</p>';
+                    contenedorSolicitudes.innerHTML = '<div class="empty-state">Aún no has enviado ninguna postulación.</div>';
                 } else {
                     datos.solicitudes.forEach(s => {
-                        let colorBadge = s.estado === 'aprobada' ? '#28a745' : (s.estado === 'rechazada' ? '#dc3545' : '#ffc107');
-                        let fotoMascota = s.foto_mascota ? `<img src="${s.foto_mascota}" style="width: 60px; height: 60px; border-radius: 8px; object-fit: cover;">` : `<div style="width: 60px; height: 60px; border-radius: 8px; background: #eee;"></div>`;
-                        
+                        const estadoClass = {'aprobada':'chip-aprobada','rechazada':'chip-rechazada','pendiente':'chip-pendiente'}[s.estado] || 'chip-pendiente';
+                        let fotoMascota = s.foto_mascota
+                            ? `<img src="${s.foto_mascota}" style="width:54px;height:54px;border-radius:10px;object-fit:cover;flex-shrink:0;">`
+                            : `<div style="width:54px;height:54px;border-radius:10px;background:var(--surface3);flex-shrink:0;"></div>`;
                         contenedorSolicitudes.innerHTML += `
-                            <div style="background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: flex; align-items: center; gap: 15px;">
+                            <div class="solicitud-item">
                                 ${fotoMascota}
-                                <div style="flex: 1;">
-                                    <h4 style="margin: 0 0 5px 0;">Postulación para ${s.nombre_mascota}</h4>
-                                    <p style="margin: 0; font-size: 12px; color: #666;">Folio: #${s.id} • Fecha: ${new Date(s.creado_en).toLocaleDateString()}</p>
+                                <div style="flex:1;">
+                                    <p style="font-weight:500;margin-bottom:3px;">Postulación para ${s.nombre_mascota}</p>
+                                    <p style="font-size:12px;color:var(--muted);">Folio #${s.id} · ${new Date(s.creado_en).toLocaleDateString()}</p>
                                 </div>
-                                <span style="background: ${colorBadge}; color: white; padding: 5px 12px; border-radius: 15px; font-size: 12px; font-weight: bold; text-transform: uppercase;">${s.estado}</span>
-                            </div>
-                        `;
+                                <span class="status-chip ${estadoClass}">${s.estado}</span>
+                            </div>`;
                     });
                 }
             }
@@ -577,61 +1088,59 @@
         e.preventDefault();
         const token = localStorage.getItem('token');
         const formData = new FormData();
-
         formData.append('nombre', document.getElementById('perfil-nombre').value);
         formData.append('apellido_paterno', document.getElementById('perfil-paterno').value);
         formData.append('apellido_materno', document.getElementById('perfil-materno').value);
         formData.append('edad', document.getElementById('perfil-edad').value);
         formData.append('telefono', document.getElementById('perfil-telefono').value);
         formData.append('direccion', document.getElementById('perfil-direccion').value);
-
         const inputFoto = document.getElementById('perfil-foto');
         if (inputFoto.files.length > 0) formData.append('foto', inputFoto.files[0]);
-
         try {
-            const respuesta = await fetch('/perfil', {
-                method: 'PUT',
-                headers: { 'Authorization': token },
-                body: formData
-            });
-            if(respuesta.ok) {
-                alert("¡Perfil actualizado con éxito!");
-                cargarPerfilUsuario(); // Refrescamos para ver la nueva foto
-            } else {
-                alert("Error al actualizar el perfil");
-            }
+            const respuesta = await fetch('/perfil', { method: 'PUT', headers: { 'Authorization': token }, body: formData });
+            if(respuesta.ok) { alert("¡Perfil actualizado con éxito!"); cargarPerfilUsuario(); }
+            else { alert("Error al actualizar el perfil"); }
         } catch (error) { console.error(error); }
     });
 
-    // --- 8. LÓGICA DE AGENDAR CITA ---
     async function agendarCita(emailUsuario, nombreMascota) {
-        // 1. Disparamos nuestro propio correo de felicitación en el backend (sin esperar a que termine)
         fetch('/notificar-cita', {
             method: 'POST',
-            headers: { 
-                'Content-Type': 'application/json',
-                'Authorization': localStorage.getItem('token')
-            },
+            headers: { 'Content-Type': 'application/json', 'Authorization': localStorage.getItem('token') },
             body: JSON.stringify({ email: emailUsuario, nombre_mascota: nombreMascota })
         });
-
-        // 2. Redirigimos al usuario a la infraestructura de Calendly
-        const urlCalendly = "https://calendly.com/adoptme-infra/visita"; 
-        window.open(urlCalendly, '_blank');
+        window.open("https://calendly.com/adoptme-infra/visita", '_blank');
     }
 
-    // --- 9. CITA DE EXPLORACIÓN (MODELO B) ---
     function agendarCitaExploratoria(nombreMascota) {
-        // Tu URL base
         const urlBase = "https://calendly.com/adoptme-infra/visita";
-        const respuesta = `Visita a ${nombreMascota}`;
-        
-        // El parámetro ?a1= inyecta la respuesta en la primera pregunta personalizada de Calendly
-        // Usamos encodeURIComponent por si el nombre tiene espacios (ej. "Max Junior")
-        const urlConParametro = `${urlBase}?a1=${encodeURIComponent(respuesta)}`;
-        
-        window.open(urlConParametro, '_blank');
+        window.open(`${urlBase}?a1=${encodeURIComponent('Visita a ' + nombreMascota)}`, '_blank');
     }
+
+    document.getElementById('form-registro').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const datos = {
+            nombre: document.getElementById('reg-nombre').value,
+            apellido_paterno: document.getElementById('reg-paterno').value,
+            email: document.getElementById('reg-email').value,
+            password: document.getElementById('reg-password').value
+        };
+
+        try {
+            const respuesta = await fetch('/registro', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(datos)
+            });
+            if (respuesta.ok) {
+                alert("¡Registro exitoso! Ahora inicia sesión.");
+                cambiarVista('vista-login');
+            } else {
+                const err = await respuesta.json();
+                alert("Error: " + err.error);
+            }
+        } catch (error) { console.error(error); }
+    });
 
     actualizarNavegacion();
     cargarMascotasGlobales('publico');

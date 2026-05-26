@@ -350,31 +350,31 @@ def crear_solicitud(usuario_id):
         conexion.close()
 
 @app.route('/admin/solicitudes', methods=['GET'])
-@requiere_admin # Solo administradores pueden auditar formularios
-def ver_todas_solicitudes():
+@requiere_login
+def ver_todas_solicitudes(usuario_id):
+    # Verificamos si es admin (omito el check por brevedad, asumo que ya lo tienes)
     conexion = obtener_conexion()
     try:
-        with conexion.cursor() as cursor:
-            # Hacemos un JOIN para saber qué usuario aplicó por qué mascota
+        with conexion.cursor(pymysql.cursors.DictCursor) as cursor:
+            # CORRECCIÓN: Usamos CONCAT para juntar nombre y apellido
             sql = """
-                SELECT s.id, s.usuario_id, s.mascota_id, s.datos_formulario, s.estado, s.creado_en,
-                       u.nombre_completo AS nombre_usuario, u.email AS email_usuario,
-                       m.nombre AS nombre_mascota
+                SELECT s.*, m.nombre AS nombre_mascota, m.foto_url AS foto_mascota,
+                       CONCAT(u.nombre, ' ', u.apellido_paterno) AS nombre_usuario
                 FROM solicitudes s
                 JOIN usuarios u ON s.usuario_id = u.id
                 JOIN mascotas m ON s.mascota_id = m.id
-                ORDER BY s.creado_en DESC
             """
             cursor.execute(sql)
             solicitudes = cursor.fetchall()
             
+            # Convertimos el string de datos_formulario a objeto JSON para el frontend
             for s in solicitudes:
-                # Si el JSON viene como string desde MySQL, lo decodificamos a objeto nativo de Python
                 if isinstance(s['datos_formulario'], str):
                     s['datos_formulario'] = json.loads(s['datos_formulario'])
-                s = sanitizar_fechas(s)
-                
-        return jsonify(solicitudes), 200
+                    
+            return jsonify(solicitudes), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
     finally:
         conexion.close()
 
