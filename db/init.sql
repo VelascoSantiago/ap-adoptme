@@ -6,14 +6,18 @@ USE adoptme_db;
 -- ==========================================
 CREATE TABLE IF NOT EXISTS usuarios (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    nombre_completo VARCHAR(100) NOT NULL,
-    email VARCHAR(100) NOT NULL UNIQUE,
-    password_hash VARCHAR(255) NOT NULL,
+    nombre VARCHAR(50) NOT NULL,
+    apellido_paterno VARCHAR(50) NOT NULL,
+    apellido_materno VARCHAR(50),
+    edad INT,
+    direccion TEXT,
     telefono VARCHAR(20),
-    rol ENUM('adoptante', 'admin') DEFAULT 'adoptante',
+    email VARCHAR(100) UNIQUE NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    foto_url VARCHAR(255) DEFAULT NULL,
+    rol ENUM('admin', 'adoptante') DEFAULT 'adoptante',
     activo BOOLEAN DEFAULT TRUE,
-    creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    actualizado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- ==========================================

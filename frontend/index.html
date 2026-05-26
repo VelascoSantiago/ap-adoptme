@@ -36,6 +36,10 @@
         .mascota-info { font-size: 14px; color: #555; margin: 5px 0; display: flex; justify-content: space-between; border-bottom: 1px solid #eee; padding-bottom: 5px;}
         .mascota-img { width: 100%; height: 220px; object-fit: cover; border-radius: 8px; margin-bottom: 15px; }
         .mascota-img-placeholder { width: 100%; height: 220px; background: #eee; border-radius: 8px; margin-bottom: 15px; display: flex; align-items: center; justify-content: center; color: #999; }
+
+        /* Estilo de la barra de filtros */
+        .filtro-bar { display: flex; gap: 15px; background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        .filtro-bar input, .filtro-bar select { padding: 10px; border: 1px solid #ccc; border-radius: 5px; flex: 1; }
     </style>
 </head>
 <body>
@@ -59,6 +63,17 @@
 
     <div id="vista-catalogo" class="vista activa">
         <h2 style="border-bottom: 2px solid #eee; padding-bottom: 10px;">🐾 Nuestros peludos buscando hogar</h2>
+        
+        <div class="filtro-bar">
+            <input type="text" id="filtro-texto-publico" placeholder="🔍 Buscar por nombre o raza..." oninput="filtrarCatalogoPublico()">
+            <select id="filtro-especie-publico" onchange="filtrarCatalogoPublico()">
+                <option value="">Todas las especies</option>
+                <option value="Perro">Perros</option>
+                <option value="Gato">Gatos</option>
+                <option value="Otro">Otros</option>
+            </select>
+        </div>
+
         <div id="contenedor-tarjetas" class="catalogo-grid"></div>
     </div>
 
@@ -76,7 +91,6 @@
             </select>
             <input type="text" id="mascota-raza" placeholder="Raza (Ej. Mestizo)" required style="padding: 10px; border: 1px solid #ccc; border-radius: 5px;">
             <input type="date" id="mascota-fecha" required title="Fecha de nacimiento aprox." style="padding: 10px; border: 1px solid #ccc; border-radius: 5px;">
-            
             <select id="mascota-tamano" required style="padding: 10px; border: 1px solid #ccc; border-radius: 5px;">
                 <option value="">Tamaño...</option>
                 <option value="Chico">Chico</option>
@@ -95,12 +109,14 @@
                 <option value="Alta">Alta</option>
             </select>
             <input type="text" id="mascota-salud" placeholder="Estado de Salud (Ej. Vacunado)" required style="padding: 10px; border: 1px solid #ccc; border-radius: 5px;">
-            
             <input type="file" id="mascota-foto" accept="image/*" style="grid-column: span 2; padding: 10px; border: 1px dashed #007bff; border-radius: 5px; background-color: #f8f9fa;">
             <button type="submit" class="btn-primary" style="grid-column: span 2; padding: 12px; font-size: 16px;">Guardar Mascota</button>
         </form>
 
         <h3>Base de Datos de Mascotas</h3>
+        
+        <input type="text" id="filtro-texto-admin" placeholder="🔍 Buscar por ID, nombre o raza..." oninput="filtrarAdminMascotas()" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; margin-bottom: 15px; box-sizing: border-box;">
+        
         <table style="width: 100%; border-collapse: collapse; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 40px;">
             <thead>
                 <tr style="background-color: #34495e; color: white; text-align: left;">
@@ -118,7 +134,6 @@
 
     <div id="vista-solicitudes" class="vista">
         <h2 style="border-bottom: 2px solid #eee; padding-bottom: 10px;">📋 Revisión de Solicitudes</h2>
-        
         <table style="width: 100%; border-collapse: collapse; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
             <thead>
                 <tr style="background-color: #2c3e50; color: white; text-align: left;">
@@ -172,16 +187,58 @@
         </div>
     </div>
 
+<div id="vista-perfil" class="vista">
+        <h2 style="border-bottom: 2px solid #eee; padding-bottom: 10px;">👤 Mi Perfil y Trámites</h2>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 20px;">
+            
+            <div style="background: white; padding: 25px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <img id="perfil-foto-preview" src="" alt="Foto de perfil" style="width: 120px; height: 120px; border-radius: 50%; object-fit: cover; background-color: #eee; border: 3px solid #007bff; display: none; margin: 0 auto;">
+                    <div id="perfil-foto-placeholder" style="width: 120px; height: 120px; border-radius: 50%; background-color: #eee; color: #999; display: flex; align-items: center; justify-content: center; margin: 0 auto; font-size: 12px;">Sin Foto</div>
+                </div>
+
+                <form id="form-perfil" style="display: grid; grid-template-columns: 1fr; gap: 15px;" enctype="multipart/form-data">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <input type="text" id="perfil-nombre" placeholder="Nombre(s)" required style="padding: 10px; border: 1px solid #ccc; border-radius: 5px;">
+                        <input type="text" id="perfil-paterno" placeholder="Apellido Paterno" required style="padding: 10px; border: 1px solid #ccc; border-radius: 5px;">
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <input type="text" id="perfil-materno" placeholder="Apellido Materno" style="padding: 10px; border: 1px solid #ccc; border-radius: 5px;">
+                        <input type="number" id="perfil-edad" placeholder="Edad" min="18" style="padding: 10px; border: 1px solid #ccc; border-radius: 5px;">
+                    </div>
+                    <input type="text" id="perfil-telefono" placeholder="Teléfono" style="padding: 10px; border: 1px solid #ccc; border-radius: 5px;">
+                    <textarea id="perfil-direccion" placeholder="Dirección completa" rows="2" style="padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-family: inherit;"></textarea>
+                    
+                    <label style="font-size: 14px; font-weight: bold; color: #555;">Actualizar Foto de Perfil:</label>
+                    <input type="file" id="perfil-foto" accept="image/*" style="padding: 10px; border: 1px dashed #007bff; border-radius: 5px; background-color: #f8f9fa;">
+                    
+                    <button type="submit" class="btn-primary" style="padding: 12px; font-size: 16px; margin-top: 10px;">Guardar Cambios</button>
+                </form>
+            </div>
+
+            <div>
+                <h3 style="margin-top: 0;">Mis Solicitudes de Adopción</h3>
+                <div id="contenedor-mis-solicitudes" style="display: flex; flex-direction: column; gap: 15px;">
+                    </div>
+            </div>
+
+        </div>
+    </div>
+
 <script>
+    // CACHÉ DE DATOS PARA FILTRADO RÁPIDO
+    let mascotasCache = [];
+
     // --- 1. LÓGICA DE NAVEGACIÓN Y ESTADO ---
     function cambiarVista(idVista) {
         document.querySelectorAll('.vista').forEach(el => el.classList.remove('activa'));
         document.getElementById(idVista).classList.add('activa');
         
-        // Carga selectiva de datos: solo llamamos a la base de datos de la vista activa
-        if(idVista === 'vista-admin') cargarMascotasAdmin(); 
+        if(idVista === 'vista-admin') cargarMascotasGlobales('admin'); 
         if(idVista === 'vista-solicitudes') cargarSolicitudesAdmin(); 
-        if(idVista === 'vista-catalogo') cargarCatalogoPublico();
+        if(idVista === 'vista-catalogo') cargarMascotasGlobales('publico');
+        if(idVista === 'vista-perfil') cargarPerfilUsuario();
     }
 
     function actualizarNavegacion() {
@@ -189,19 +246,23 @@
         const rol = localStorage.getItem('rol');
         const menu = document.getElementById('menu-navegacion');
         
+        // 1. Botón del catálogo
         let botonesHTML = `<button class="btn-outline" onclick="cambiarVista('vista-catalogo')">Ver Mascotas</button>`;
+        
+        // 2. NUEVO: Botón global de Agendar Cita (Abre Calendly en otra pestaña)
+        botonesHTML += `<button class="btn-outline" style="border-color: #17a2b8; color: #17a2b8; margin-left: 10px;" onclick="window.open('https://calendly.com/adoptme-infra/visita', '_blank')">📅 Agendar Cita</button>`;
 
+        // 3. Lógica de sesión (Login, Perfil, Admin, Salir)
         if (!token) {
-            botonesHTML += `<button class="btn-primary" onclick="cambiarVista('vista-login')">Iniciar Sesión</button>`;
+            botonesHTML += `<button class="btn-primary" style="margin-left: 10px;" onclick="cambiarVista('vista-login')">Iniciar Sesión</button>`;
         } else {
             if (rol === 'admin') {
-                // AQUÍ ESTÁN LOS DOS BOTONES SEPARADOS
-                botonesHTML += `<button class="btn-primary" onclick="cambiarVista('vista-admin')">🐶 Panel Mascotas</button>`;
-                botonesHTML += `<button class="btn-primary" style="background-color: #17a2b8;" onclick="cambiarVista('vista-solicitudes')">📋 Solicitudes</button>`;
+                botonesHTML += `<button class="btn-primary" style="margin-left: 10px;" onclick="cambiarVista('vista-admin')">🐶 Panel Mascotas</button>`;
+                botonesHTML += `<button class="btn-primary" style="background-color: #17a2b8; margin-left: 10px;" onclick="cambiarVista('vista-solicitudes')">📋 Solicitudes</button>`;
             } else {
-                botonesHTML += `<button class="btn-primary" onclick="cambiarVista('vista-perfil')">👤 Mi Perfil</button>`;
+                botonesHTML += `<button class="btn-primary" style="margin-left: 10px;" onclick="cambiarVista('vista-perfil')">👤 Mi Perfil</button>`;
             }
-            botonesHTML += `<button class="btn-danger" onclick="cerrarSesion()">Salir</button>`;
+            botonesHTML += `<button class="btn-danger" style="margin-left: 10px;" onclick="cerrarSesion()">Salir</button>`;
         }
         menu.innerHTML = botonesHTML;
     }
@@ -243,36 +304,103 @@
         cambiarVista('vista-catalogo');
     }
 
-    // --- 3. LÓGICA DEL PANEL ADMINISTRATIVO (MASCOTAS) ---
-    async function cargarMascotasAdmin() {
+    // --- 3. EXTRACCIÓN DE DATOS Y FILTROS ---
+    async function cargarMascotasGlobales(destino) {
         try {
-            const respuesta = await fetch('/mascotas'); 
-            const mascotas = await respuesta.json();
-            const tbody = document.getElementById('tabla-mascotas-admin');
-            tbody.innerHTML = ''; 
-
-            mascotas.forEach(m => {
-                const fotoHtml = m.foto_url 
-                    ? `<img src="${m.foto_url}" style="width: 40px; height: 40px; object-fit: cover; border-radius: 4px;">` 
-                    : `<span style="font-size: 10px; color: #999;">Sin foto</span>`;
-
-                tbody.innerHTML += `
-                    <tr style="border-bottom: 1px solid #eee;">
-                        <td style="padding: 12px;">${fotoHtml}</td>
-                        <td style="padding: 12px;">${m.id}</td>
-                        <td style="padding: 12px;"><strong>${m.nombre}</strong></td>
-                        <td style="padding: 12px;">${m.especie}</td>
-                        <td style="padding: 12px;"><span style="background: #e8f4f8; padding: 5px 10px; border-radius: 15px; font-size: 12px;">${m.estado_adopcion}</span></td>
-                        <td style="padding: 12px;">
-                            <button onclick="borrarMascota(${m.id})" class="btn-danger" style="padding: 5px 10px; font-size: 12px;">Borrar</button>
-                        </td>
-                    </tr>`;
-            });
+            const respuesta = await fetch('/mascotas');
+            mascotasCache = await respuesta.json(); // Guardamos los datos en la memoria del navegador
+            
+            if (destino === 'admin') filtrarAdminMascotas();
+            if (destino === 'publico') filtrarCatalogoPublico();
         } catch (error) {
-            console.error("Error al cargar mascotas:", error);
+            console.error("Error al cargar datos:", error);
         }
     }
 
+    // Filtrado en la vista pública
+    function filtrarCatalogoPublico() {
+        const textoBusqueda = document.getElementById('filtro-texto-publico').value.toLowerCase();
+        const filtroEspecie = document.getElementById('filtro-especie-publico').value;
+        const contenedor = document.getElementById('contenedor-tarjetas');
+        contenedor.innerHTML = '';
+
+        // Excluimos las adoptadas
+        let filtradas = mascotasCache.filter(m => m.estado_adopcion !== 'adoptado');
+
+        // Filtro por texto (Nombre o Raza)
+        if (textoBusqueda) {
+            filtradas = filtradas.filter(m => 
+                m.nombre.toLowerCase().includes(textoBusqueda) || 
+                m.raza.toLowerCase().includes(textoBusqueda)
+            );
+        }
+
+        // Filtro por dropdown de especie
+        if (filtroEspecie) {
+            filtradas = filtradas.filter(m => m.especie === filtroEspecie);
+        }
+
+        if (filtradas.length === 0) {
+            contenedor.innerHTML = '<p style="color: #666; width: 100%; text-align: center;">No se encontraron mascotas con esos filtros.</p>';
+            return;
+        }
+
+        // Renderizado
+        filtradas.forEach(m => {
+            const imagenHtml = m.foto_url ? `<img src="${m.foto_url}" class="mascota-img">` : `<div class="mascota-img-placeholder">Sin foto</div>`;
+            const badgeEspecie = m.estado_adopcion === 'en_proceso'
+                ? `<span class="mascota-badge" style="background: #fff3cd; color: #856404; border: 1px solid #ffeeba;">${m.especie} • Solicitada</span>`
+                : `<span class="mascota-badge">${m.especie} • ${m.raza}</span>`;
+
+            contenedor.innerHTML += `
+                <div class="mascota-card">
+                    ${imagenHtml}
+                    <h3>${m.nombre}</h3>
+                    ${badgeEspecie}
+                    <div class="mascota-info"><span><strong>Tamaño:</strong></span> <span>${m.tamano}</span></div>
+                    <div class="mascota-info"><span><strong>Sexo:</strong></span> <span>${m.sexo}</span></div>
+                    <div class="mascota-info"><span><strong>Energía:</strong></span> <span>${m.energia}</span></div>
+                    
+                    <div style="display: flex; gap: 10px; margin-top: 20px;">
+                        <button class="btn-outline" style="flex: 1; padding: 10px; font-size: 13px;" onclick="agendarCitaExploratoria('${m.nombre}')">📅 Conocer</button>
+                        <button class="btn-primary" style="flex: 1; padding: 10px; font-size: 13px;" onclick="iniciarAdopcion(${m.id}, '${m.nombre}')">📝 Postularme</button>
+                    </div>
+                </div>
+            `;
+        });
+    }
+
+    // Filtrado en la vista de Admin
+    function filtrarAdminMascotas() {
+        const textoBusqueda = document.getElementById('filtro-texto-admin').value.toLowerCase();
+        const tbody = document.getElementById('tabla-mascotas-admin');
+        tbody.innerHTML = ''; 
+
+        let filtradas = mascotasCache;
+
+        if (textoBusqueda) {
+            filtradas = filtradas.filter(m => 
+                m.id.toString() === textoBusqueda || 
+                m.nombre.toLowerCase().includes(textoBusqueda) || 
+                m.raza.toLowerCase().includes(textoBusqueda)
+            );
+        }
+
+        filtradas.forEach(m => {
+            const fotoHtml = m.foto_url ? `<img src="${m.foto_url}" style="width: 40px; height: 40px; object-fit: cover; border-radius: 4px;">` : `<span style="font-size: 10px; color: #999;">Sin foto</span>`;
+            tbody.innerHTML += `
+                <tr style="border-bottom: 1px solid #eee;">
+                    <td style="padding: 12px;">${fotoHtml}</td>
+                    <td style="padding: 12px;">${m.id}</td>
+                    <td style="padding: 12px;"><strong>${m.nombre}</strong></td>
+                    <td style="padding: 12px;">${m.especie}</td>
+                    <td style="padding: 12px;"><span style="background: #e8f4f8; padding: 5px 10px; border-radius: 15px; font-size: 12px;">${m.estado_adopcion}</span></td>
+                    <td style="padding: 12px;"><button onclick="borrarMascota(${m.id})" class="btn-danger" style="padding: 5px 10px; font-size: 12px;">Borrar</button></td>
+                </tr>`;
+        });
+    }
+
+    // --- GUARDAR Y BORRAR MASCOTAS ---
     document.getElementById('form-mascota').addEventListener('submit', async (e) => {
         e.preventDefault(); 
         const token = localStorage.getItem('token');
@@ -288,57 +416,40 @@
         formData.append('salud', document.getElementById('mascota-salud').value);
 
         const inputFoto = document.getElementById('mascota-foto');
-        if (inputFoto.files.length > 0) {
-            formData.append('foto', inputFoto.files[0]);
-        }
+        if (inputFoto.files.length > 0) formData.append('foto', inputFoto.files[0]);
 
         try {
-            const respuesta = await fetch('/agregar', {
-                method: 'POST',
-                headers: { 'Authorization': token },
-                body: formData
-            });
-
+            const respuesta = await fetch('/agregar', { method: 'POST', headers: { 'Authorization': token }, body: formData });
             if(respuesta.ok) {
-                alert("¡Mascota registrada con éxito!");
+                alert("¡Mascota registrada!");
                 document.getElementById('form-mascota').reset();
-                cargarMascotasAdmin(); 
+                cargarMascotasGlobales('admin'); 
             } else {
                 const errorData = await respuesta.json();
-                alert("Error: " + (errorData.error || "Ocurrió un error"));
+                alert("Error: " + errorData.error);
             }
-        } catch (error) {
-            console.error("Error al guardar:", error);
-        }
+        } catch (error) { console.error(error); }
     });
 
     async function borrarMascota(id) {
-        if(!confirm(`¿Estás seguro de que quieres borrar la mascota #${id}?`)) return;
-        const token = localStorage.getItem('token');
+        if(!confirm(`¿Borrar mascota #${id}?`)) return;
         try {
-            const respuesta = await fetch(`/mascotas/${id}`, {
-                method: 'DELETE',
-                headers: { 'Authorization': token }
-            });
-            if(respuesta.ok) cargarMascotasAdmin(); 
-        } catch (error) {
-            console.error("Error al borrar:", error);
-        }
+            const respuesta = await fetch(`/mascotas/${id}`, { method: 'DELETE', headers: { 'Authorization': localStorage.getItem('token') } });
+            if(respuesta.ok) cargarMascotasGlobales('admin'); 
+        } catch (error) { console.error(error); }
     }
 
-    // --- 4. LÓGICA DEL PANEL DE GESTIÓN DE SOLICITUDES ---
+    // --- PANEL SOLICITUDES ---
     async function cargarSolicitudesAdmin() {
         const token = localStorage.getItem('token');
         try {
-            const respuesta = await fetch('/admin/solicitudes', {
-                headers: { 'Authorization': token }
-            });
+            const respuesta = await fetch('/admin/solicitudes', { headers: { 'Authorization': token } });
             const solicitudes = await respuesta.json();
             const tbody = document.getElementById('tabla-solicitudes-admin');
             tbody.innerHTML = '';
 
             if (solicitudes.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" style="padding: 20px; text-align: center; color: #666;">No hay postulaciones registradas en el sistema.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center;">No hay postulaciones.</td></tr>';
                 return;
             }
 
@@ -349,120 +460,50 @@
                 }
                 respuestasHtml += '</ul>';
 
-                let accionesHtml = '';
-                if (s.estado === 'pendiente') {
-                    accionesHtml = `
-                        <button onclick="resolverSolicitud(${s.id}, 'aprobada')" class="btn-primary" style="padding: 5px 10px; font-size: 11px; background-color: #28a745;">Aprobar</button>
-                        <button onclick="resolverSolicitud(${s.id}, 'rechazada')" class="btn-danger" style="padding: 5px 10px; font-size: 11px; margin-left: 4px;">Rechazar</button>
-                    `;
-                } else {
-                    accionesHtml = `<span style="font-size: 12px; color: #aaa; font-style: italic;">Evaluada</span>`;
-                }
+                let accionesHtml = s.estado === 'pendiente' 
+                    ? `<button onclick="resolverSolicitud(${s.id}, 'aprobada')" class="btn-primary" style="padding: 5px; font-size: 11px; background-color: #28a745;">Aprobar</button> <button onclick="resolverSolicitud(${s.id}, 'rechazada')" class="btn-danger" style="padding: 5px; font-size: 11px;">Rechazar</button>`
+                    : `<span style="font-size: 12px; color: #aaa;">Evaluada</span>`;
 
                 let colorBadge = s.estado === 'aprobada' ? '#28a745' : (s.estado === 'rechazada' ? '#dc3545' : '#ffc107');
-                let colorTexto = s.estado === 'pendiente' ? '#333' : '#fff';
 
                 tbody.innerHTML += `
                     <tr style="border-bottom: 1px solid #eee; font-size: 14px;">
                         <td style="padding: 12px;"><strong>#${s.id}</strong></td>
-                        <td style="padding: 12px;">${s.nombre_usuario}<br><small style="color:#777;">${s.email_usuario}</small></td>
-                        <td style="padding: 12px;">${s.nombre_mascota} <small style="color:#666;">(ID: ${s.mascota_id})</small></td>
+                        <td style="padding: 12px;">${s.nombre_usuario}</td>
+                        <td style="padding: 12px;">${s.nombre_mascota}</td>
                         <td style="padding: 12px;">${respuestasHtml}</td>
-                        <td style="padding: 12px;"><span style="background: ${colorBadge}; color: ${colorTexto}; padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: bold; text-transform: uppercase;">${s.estado}</span></td>
+                        <td style="padding: 12px;"><span style="background: ${colorBadge}; color: #fff; padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: bold; text-transform: uppercase;">${s.estado}</span></td>
                         <td style="padding: 12px;">${accionesHtml}</td>
                     </tr>`;
             });
-        } catch (error) {
-            console.error("Error al renderizar las solicitudes:", error);
-        }
+        } catch (error) { console.error(error); }
     }
 
     async function resolverSolicitud(idSolicitud, nuevoEstado) {
-        if(!confirm(`¿Estás seguro de marcar esta solicitud como: ${nuevoEstado.toUpperCase()}?`)) return;
-        const token = localStorage.getItem('token');
+        if(!confirm(`¿Marcar como: ${nuevoEstado.toUpperCase()}?`)) return;
         try {
-            const respuesta = await fetch(`/admin/solicitudes/${idSolicitud}`, {
-                method: 'PUT',
-                headers: { 
-                    'Content-Type': 'application/json',
-                    'Authorization': token 
-                },
-                body: JSON.stringify({ estado: nuevoEstado })
-            });
-
-            if (respuesta.ok) {
-                alert(`Trámite resuelto como ${nuevoEstado} exitosamente.`);
-                cargarSolicitudesAdmin();
-            } else {
-                const err = await respuesta.json();
-                alert("Error: " + err.error);
-            }
-        } catch (error) {
-            console.error("Error al dictaminar:", error);
-        }
+            const respuesta = await fetch(`/admin/solicitudes/${idSolicitud}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': localStorage.getItem('token') }, body: JSON.stringify({ estado: nuevoEstado }) });
+            if (respuesta.ok) cargarSolicitudesAdmin();
+            else alert("Error al resolver");
+        } catch (error) { console.error(error); }
     }
 
-    // --- 5. LÓGICA DEL CATÁLOGO PÚBLICO ---
-    async function cargarCatalogoPublico() {
-        try {
-            const respuesta = await fetch('/mascotas');
-            const mascotas = await respuesta.json();
-            const contenedor = document.getElementById('contenedor-tarjetas');
-            contenedor.innerHTML = '';
-
-            const visibles = mascotas.filter(m => m.estado_adopcion !== 'adoptado');
-
-            if (visibles.length === 0) {
-                contenedor.innerHTML = '<p style="color: #666;">No hay mascotas disponibles en este momento. ¡Vuelve pronto!</p>';
-                return;
-            }
-
-            visibles.forEach(m => {
-                const imagenHtml = m.foto_url 
-                    ? `<img src="${m.foto_url}" alt="Foto de ${m.nombre}" class="mascota-img">` 
-                    : `<div class="mascota-img-placeholder">Sin foto</div>`;
-
-                const badgeEspecie = m.estado_adopcion === 'en_proceso'
-                    ? `<span class="mascota-badge" style="background: #fff3cd; color: #856404; border: 1px solid #ffeeba;">${m.especie} • Solicitada</span>`
-                    : `<span class="mascota-badge">${m.especie} • ${m.raza}</span>`;
-
-                contenedor.innerHTML += `
-                    <div class="mascota-card">
-                        ${imagenHtml}
-                        <h3>${m.nombre}</h3>
-                        ${badgeEspecie}
-                        <div class="mascota-info"><span><strong>Tamaño:</strong></span> <span>${m.tamano}</span></div>
-                        <div class="mascota-info"><span><strong>Sexo:</strong></span> <span>${m.sexo}</span></div>
-                        <div class="mascota-info"><span><strong>Energía:</strong></span> <span>${m.energia}</span></div>
-                        <button class="btn-primary" style="margin-top: 20px; width: 100%;" onclick="iniciarAdopcion(${m.id}, '${m.nombre}')">¡Quiero Adoptarlo!</button>
-                    </div>
-                `;
-            });
-        } catch (error) {
-            console.error("Error al cargar el catálogo:", error);
-        }
-    }
-
+    // --- FORMULARIO DE ADOPCIÓN ---
     function iniciarAdopcion(mascotaId, nombreMascota) {
-        const token = localStorage.getItem('token');
-        if (!token) {
-            alert("¡Para postularte debes iniciar sesión o crear una cuenta primero!");
+        if (!localStorage.getItem('token')) {
+            alert("¡Inicia sesión primero!");
             cambiarVista('vista-login');
         } else {
             document.getElementById('adopcion-mascota-id').value = mascotaId;
-            document.getElementById('titulo-formulario').innerText = `Postulación para adoptar a ${nombreMascota}`;
+            document.getElementById('titulo-formulario').innerText = `Postulación para ${nombreMascota}`;
             cambiarVista('vista-formulario');
         }
     }
 
-    // --- 6. ENVIAR FORMULARIO DE ADOPCIÓN ---
     document.getElementById('form-adopcion').addEventListener('submit', async (e) => {
         e.preventDefault();
-        const token = localStorage.getItem('token');
-        const mascotaId = document.getElementById('adopcion-mascota-id').value;
-        
         const payload = {
-            mascota_id: mascotaId,
+            mascota_id: document.getElementById('adopcion-mascota-id').value,
             datos_formulario: {
                 tipo_vivienda: document.getElementById('preg-vivienda').value,
                 tiene_patio: document.getElementById('preg-patio').value,
@@ -472,30 +513,128 @@
         };
 
         try {
-            const respuesta = await fetch('/solicitudes', {
-                method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json',
-                    'Authorization': token 
-                },
-                body: JSON.stringify(payload)
-            });
+            const respuesta = await fetch('/solicitudes', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': localStorage.getItem('token') }, body: JSON.stringify(payload) });
+            if (respuesta.ok) {
+                alert("¡Solicitud enviada!");
+                document.getElementById('form-adopcion').reset();
+                cambiarVista('vista-catalogo');
+            } else alert("Error al enviar");
+        } catch (error) { console.error(error); }
+    });
+
+    // --- 7. LÓGICA DEL PERFIL DE USUARIO ---
+    async function cargarPerfilUsuario() {
+        const token = localStorage.getItem('token');
+        try {
+            const respuesta = await fetch('/perfil', { headers: { 'Authorization': token } });
             const datos = await respuesta.json();
 
             if (respuesta.ok) {
-                alert(datos.mensaje);
-                document.getElementById('form-adopcion').reset();
-                cambiarVista('vista-catalogo');
-            } else {
-                alert("Error: " + (datos.error || "No se pudo procesar"));
+                // 1. Llenar el formulario
+                const u = datos.usuario;
+                document.getElementById('perfil-nombre').value = u.nombre || '';
+                document.getElementById('perfil-paterno').value = u.apellido_paterno || '';
+                document.getElementById('perfil-materno').value = u.apellido_materno || '';
+                document.getElementById('perfil-edad').value = u.edad || '';
+                document.getElementById('perfil-telefono').value = u.telefono || '';
+                document.getElementById('perfil-direccion').value = u.direccion || '';
+
+                // Mostrar foto actual si existe
+                if (u.foto_url) {
+                    document.getElementById('perfil-foto-preview').src = u.foto_url;
+                    document.getElementById('perfil-foto-preview').style.display = 'block';
+                    document.getElementById('perfil-foto-placeholder').style.display = 'none';
+                }
+
+                // 2. Renderizar historial de solicitudes
+                const contenedorSolicitudes = document.getElementById('contenedor-mis-solicitudes');
+                contenedorSolicitudes.innerHTML = '';
+
+                if (datos.solicitudes.length === 0) {
+                    contenedorSolicitudes.innerHTML = '<p style="color: #666; background: white; padding: 20px; border-radius: 8px;">Aún no has enviado ninguna postulación. ¡Anímate a adoptar!</p>';
+                } else {
+                    datos.solicitudes.forEach(s => {
+                        let colorBadge = s.estado === 'aprobada' ? '#28a745' : (s.estado === 'rechazada' ? '#dc3545' : '#ffc107');
+                        let fotoMascota = s.foto_mascota ? `<img src="${s.foto_mascota}" style="width: 60px; height: 60px; border-radius: 8px; object-fit: cover;">` : `<div style="width: 60px; height: 60px; border-radius: 8px; background: #eee;"></div>`;
+                        
+                        contenedorSolicitudes.innerHTML += `
+                            <div style="background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: flex; align-items: center; gap: 15px;">
+                                ${fotoMascota}
+                                <div style="flex: 1;">
+                                    <h4 style="margin: 0 0 5px 0;">Postulación para ${s.nombre_mascota}</h4>
+                                    <p style="margin: 0; font-size: 12px; color: #666;">Folio: #${s.id} • Fecha: ${new Date(s.creado_en).toLocaleDateString()}</p>
+                                </div>
+                                <span style="background: ${colorBadge}; color: white; padding: 5px 12px; border-radius: 15px; font-size: 12px; font-weight: bold; text-transform: uppercase;">${s.estado}</span>
+                            </div>
+                        `;
+                    });
+                }
             }
-        } catch (error) {
-            alert("Error al conectar con el servidor.");
-        }
+        } catch (error) { console.error("Error al cargar perfil:", error); }
+    }
+
+    document.getElementById('form-perfil').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const token = localStorage.getItem('token');
+        const formData = new FormData();
+
+        formData.append('nombre', document.getElementById('perfil-nombre').value);
+        formData.append('apellido_paterno', document.getElementById('perfil-paterno').value);
+        formData.append('apellido_materno', document.getElementById('perfil-materno').value);
+        formData.append('edad', document.getElementById('perfil-edad').value);
+        formData.append('telefono', document.getElementById('perfil-telefono').value);
+        formData.append('direccion', document.getElementById('perfil-direccion').value);
+
+        const inputFoto = document.getElementById('perfil-foto');
+        if (inputFoto.files.length > 0) formData.append('foto', inputFoto.files[0]);
+
+        try {
+            const respuesta = await fetch('/perfil', {
+                method: 'PUT',
+                headers: { 'Authorization': token },
+                body: formData
+            });
+            if(respuesta.ok) {
+                alert("¡Perfil actualizado con éxito!");
+                cargarPerfilUsuario(); // Refrescamos para ver la nueva foto
+            } else {
+                alert("Error al actualizar el perfil");
+            }
+        } catch (error) { console.error(error); }
     });
 
-    // Inicializar estado de la página
+    // --- 8. LÓGICA DE AGENDAR CITA ---
+    async function agendarCita(emailUsuario, nombreMascota) {
+        // 1. Disparamos nuestro propio correo de felicitación en el backend (sin esperar a que termine)
+        fetch('/notificar-cita', {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': localStorage.getItem('token')
+            },
+            body: JSON.stringify({ email: emailUsuario, nombre_mascota: nombreMascota })
+        });
+
+        // 2. Redirigimos al usuario a la infraestructura de Calendly
+        const urlCalendly = "https://calendly.com/adoptme-infra/visita"; 
+        window.open(urlCalendly, '_blank');
+    }
+
+    // --- 9. CITA DE EXPLORACIÓN (MODELO B) ---
+    function agendarCitaExploratoria(nombreMascota) {
+        // Tu URL base
+        const urlBase = "https://calendly.com/adoptme-infra/visita";
+        const respuesta = `Visita a ${nombreMascota}`;
+        
+        // El parámetro ?a1= inyecta la respuesta en la primera pregunta personalizada de Calendly
+        // Usamos encodeURIComponent por si el nombre tiene espacios (ej. "Max Junior")
+        const urlConParametro = `${urlBase}?a1=${encodeURIComponent(respuesta)}`;
+        
+        window.open(urlConParametro, '_blank');
+    }
+
     actualizarNavegacion();
+    cargarMascotasGlobales('publico');
 </script>
 </body>
 </html>

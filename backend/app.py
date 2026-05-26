@@ -190,35 +190,113 @@ def eliminar_mascota(id_mascota):
 
 
 # ==========================================
-# MÓDULO 2: USUARIOS
+# MÓDULO 2: USUARIOS Y PERFIL
 # ==========================================
 
-@app.route('/usuarios', methods=['POST'])
-def registrar_usuario():
-    datos = request.get_json()
+@app.route('/perfil', methods=['GET'])
+@requiere_login # Protegido: Solo el dueño de la sesión puede ver esto
+def obtener_perfil(usuario_id):
     conexion = obtener_conexion()
     try:
         with conexion.cursor() as cursor:
-            sql = """INSERT INTO usuarios (nombre_completo, email, password_hash, telefono, rol) 
-                     VALUES (%s, %s, %s, %s, %s)"""
-            valores = (
-                datos.get('nombre_completo'), datos.get('email'), 
-                datos.get('password'), datos.get('telefono'), datos.get('rol', 'adoptante')
-            )
-            cursor.execute(sql, valores)
-        conexion.commit()
-        return jsonify({"mensaje": "Usuario registrado", "id_asignado": cursor.lastrowid}), 201
+            # 1. Obtenemos los datos demográficos del usuario
+            cursor.execute("""
+                SELECT id, nombre, apellido_paterno, apellido_materno, edad, 
+                       direccion, telefono, email, foto_url, rol 
+                FROM usuarios WHERE id = %s
+            """, (usuario_id,))
+            usuario = cursor.fetchone()
+
+            # 2. Obtenemos el historial de SUS solicitudes
+            sql_solicitudes = """
+                SELECT s.id, s.estado, s.creado_en, m.nombre AS nombre_mascota, m.foto_url AS foto_mascota
+                FROM solicitudes s
+                JOIN mascotas m ON s.mascota_id = m.id
+                WHERE s.usuario_id = %s
+                ORDER BY s.creado_en DESC
+            """
+            cursor.execute(sql_solicitudes, (usuario_id,))
+            solicitudes = [sanitizar_fechas(s) for s in cursor.fetchall()]
+
+            # Empaquetamos todo en un solo JSON
+            return jsonify({
+                "usuario": usuario,
+                "solicitudes": solicitudes
+            }), 200
     finally:
         conexion.close()
 
-@app.route('/usuarios', methods=['GET'])
-def ver_usuarios():
+@app.route('/perfil', methods=['PUT'])
+@requiere_login
+def actualizar_perfil(usuario_id):
+    # Usamos request.form y request.files igual que con las mascotas para soportar fotos
+    datos = request.form
+    archivo_foto = request.files.get('foto')
+    
     conexion = obtener_conexion()
     try:
         with conexion.cursor() as cursor:
-            cursor.execute("SELECT id, nombre_completo, email, telefono, rol, activo, creado_en FROM usuarios")
-            usuarios = [sanitizar_fechas(u) for u in cursor.fetchall()]
-        return jsonify(usuarios), 200
+            # Rescatamos la foto actual por si el usuario no sube una nueva
+            cursor.execute("SELECT foto_url FROM usuarios WHERE id = %s", (usuario_id,))
+            foto_url = cursor.fetchone()['foto_url']
+
+            # Procesamiento de la nueva imagen (si existe)
+            if archivo_foto and archivo_foto.filename != '':
+                ext = archivo_foto.filename.rsplit('.', 1)[1].lower()
+                nombre_seguro = f"user_{uuid.uuid4().hex}.{ext}"
+                carpeta_destino = '/app/uploads'
+                os.makedirs(carpeta_destino, exist_ok=True)
+                ruta_fisica = os.path.join(carpeta_destino, nombre_seguro)
+                archivo_foto.save(ruta_fisica)
+                foto_url = f"/uploads/{nombre_seguro}"
+
+            # Actualizamos la base de datos
+            sql = """UPDATE usuarios 
+                     SET nombre = %s, apellido_paterno = %s, apellido_materno = %s, 
+                         edad = %s, direccion = %s, telefono = %s, foto_url = %s
+                     WHERE id = %s"""
+            valores = (
+                datos.get('nombre'), datos.get('apellido_paterno'), datos.get('apellido_materno'),
+                datos.get('edad'), datos.get('direccion'), datos.get('telefono'), foto_url, usuario_id
+            )
+            cursor.execute(sql, valores)
+        conexion.commit()
+        return jsonify({"mensaje": "Perfil actualizado exitosamente", "foto_url": foto_url}), 200
+    except Exception as e:
+        conexion.rollback()
+        return jsonify({"error": "Error interno al actualizar perfil", "detalle": str(e)}), 500
+    finally:
+        conexion.close()
+
+@app.route('/registro', methods=['POST'])
+def crear_cuenta():
+    datos = request.get_json()
+    nombre = datos.get('nombre')
+    apellido_paterno = datos.get('apellido_paterno')
+    email = datos.get('email')
+    password = datos.get('password') # En un entorno real de producción, aquí usaríamos una librería para encriptar este string
+
+    if not all([nombre, apellido_paterno, email, password]):
+        return jsonify({"error": "Faltan campos obligatorios (nombre, apellido_paterno, email, password)."}), 400
+
+    conexion = obtener_conexion()
+    try:
+        with conexion.cursor() as cursor:
+            # 1. Verificamos que el correo no exista ya en la base de datos
+            cursor.execute("SELECT id FROM usuarios WHERE email = %s", (email,))
+            if cursor.fetchone():
+                return jsonify({"error": "Este correo electrónico ya está registrado."}), 400
+            
+            # 2. Insertamos al nuevo usuario con el rol de adoptante por defecto
+            sql = """INSERT INTO usuarios (nombre, apellido_paterno, email, password_hash, rol) 
+                     VALUES (%s, %s, %s, %s, 'adoptante')"""
+            cursor.execute(sql, (nombre, apellido_paterno, email, password))
+            
+        conexion.commit()
+        return jsonify({"mensaje": "¡Cuenta creada con éxito! Ya puedes iniciar sesión."}), 201
+    except Exception as e:
+        conexion.rollback()
+        return jsonify({"error": "Error interno al crear la cuenta", "detalle": str(e)}), 500
     finally:
         conexion.close()
 
