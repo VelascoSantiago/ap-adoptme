@@ -41,11 +41,8 @@
 <body>
 
     <nav class="navbar">
-        <div class="navbar-brand">
-            AdoptMe
-        </div>
-        <div class="nav-links" id="menu-navegacion">
-            </div>
+        <div class="navbar-brand">AdoptMe</div>
+        <div class="nav-links" id="menu-navegacion"></div>
     </nav>
 
     <div id="vista-login" class="vista">
@@ -62,12 +59,11 @@
 
     <div id="vista-catalogo" class="vista activa">
         <h2 style="border-bottom: 2px solid #eee; padding-bottom: 10px;">🐾 Nuestros peludos buscando hogar</h2>
-        <div id="contenedor-tarjetas" class="catalogo-grid">
-            </div>
+        <div id="contenedor-tarjetas" class="catalogo-grid"></div>
     </div>
 
     <div id="vista-admin" class="vista">
-        <h2 style="border-bottom: 2px solid #eee; padding-bottom: 10px;">⚙️ Panel Administrativo</h2>
+        <h2 style="border-bottom: 2px solid #eee; padding-bottom: 10px;">🐶 Panel de Mascotas</h2>
         
         <h3>Registrar Nueva Mascota</h3>
         <form id="form-mascota" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; background: white; padding: 25px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 40px;" enctype="multipart/form-data">
@@ -83,7 +79,7 @@
             
             <select id="mascota-tamano" required style="padding: 10px; border: 1px solid #ccc; border-radius: 5px;">
                 <option value="">Tamaño...</option>
-                <option value="Pequeño">Pequeño</option>
+                <option value="Chico">Chico</option>
                 <option value="Mediano">Mediano</option>
                 <option value="Grande">Grande</option>
             </select>
@@ -101,12 +97,11 @@
             <input type="text" id="mascota-salud" placeholder="Estado de Salud (Ej. Vacunado)" required style="padding: 10px; border: 1px solid #ccc; border-radius: 5px;">
             
             <input type="file" id="mascota-foto" accept="image/*" style="grid-column: span 2; padding: 10px; border: 1px dashed #007bff; border-radius: 5px; background-color: #f8f9fa;">
-
             <button type="submit" class="btn-primary" style="grid-column: span 2; padding: 12px; font-size: 16px;">Guardar Mascota</button>
         </form>
 
         <h3>Base de Datos de Mascotas</h3>
-        <table style="width: 100%; border-collapse: collapse; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+        <table style="width: 100%; border-collapse: collapse; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 40px;">
             <thead>
                 <tr style="background-color: #34495e; color: white; text-align: left;">
                     <th style="padding: 15px;">Foto</th>
@@ -117,9 +112,64 @@
                     <th style="padding: 15px;">Acciones</th>
                 </tr>
             </thead>
-            <tbody id="tabla-mascotas-admin">
-                </tbody>
+            <tbody id="tabla-mascotas-admin"></tbody>
         </table>
+    </div>
+
+    <div id="vista-solicitudes" class="vista">
+        <h2 style="border-bottom: 2px solid #eee; padding-bottom: 10px;">📋 Revisión de Solicitudes</h2>
+        
+        <table style="width: 100%; border-collapse: collapse; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+            <thead>
+                <tr style="background-color: #2c3e50; color: white; text-align: left;">
+                    <th style="padding: 15px;">ID Solicitud</th>
+                    <th style="padding: 15px;">Adoptante</th>
+                    <th style="padding: 15px;">Mascota</th>
+                    <th style="padding: 15px;">Respuestas de Estudio Socioambiental</th>
+                    <th style="padding: 15px;">Dictamen</th>
+                    <th style="padding: 15px;">Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="tabla-solicitudes-admin"></tbody>
+        </table>
+    </div>
+
+    <div id="vista-formulario" class="vista">
+        <button class="btn-outline" onclick="cambiarVista('vista-catalogo')" style="margin-bottom: 20px;">← Volver al Catálogo</button>
+        <div style="background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); max-width: 800px; margin: auto;">
+            <h2 id="titulo-formulario" style="border-bottom: 2px solid #eee; padding-bottom: 10px; margin-top: 0;">Postulación de Adopción</h2>
+            <p style="color: #666; font-size: 14px; margin-bottom: 25px;">Por favor, responde con honestidad. Queremos asegurarnos de que nuestras mascotas vayan al hogar ideal.</p>
+            <form id="form-adopcion" style="display: grid; grid-template-columns: 1fr; gap: 20px;">
+                <input type="hidden" id="adopcion-mascota-id">
+                <div>
+                    <label style="font-weight: bold; display: block; margin-bottom: 5px;">1. ¿En qué tipo de vivienda habitas?</label>
+                    <select id="preg-vivienda" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px;">
+                        <option value="">Selecciona...</option>
+                        <option value="Casa propia">Casa propia</option>
+                        <option value="Casa rentada">Casa rentada</option>
+                        <option value="Departamento">Departamento</option>
+                    </select>
+                </div>
+                <div>
+                    <label style="font-weight: bold; display: block; margin-bottom: 5px;">2. ¿Tu vivienda cuenta con patio o jardín cercado?</label>
+                    <select id="preg-patio" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px;">
+                        <option value="">Selecciona...</option>
+                        <option value="Sí, grande">Sí, grande</option>
+                        <option value="Sí, pequeño">Sí, pequeño</option>
+                        <option value="No">No</option>
+                    </select>
+                </div>
+                <div>
+                    <label style="font-weight: bold; display: block; margin-bottom: 5px;">3. ¿Cuántas horas en promedio pasará la mascota sola al día?</label>
+                    <input type="number" id="preg-horas" min="0" max="24" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box;">
+                </div>
+                <div>
+                    <label style="font-weight: bold; display: block; margin-bottom: 5px;">4. ¿Tienes otras mascotas actualmente?</label>
+                    <textarea id="preg-otras-mascotas" placeholder="Especifica especie, edad y carácter" required rows="3" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; font-family: inherit;"></textarea>
+                </div>
+                <button type="submit" class="btn-primary" style="padding: 15px; font-size: 16px; margin-top: 10px;">Enviar Solicitud de Adopción</button>
+            </form>
+        </div>
     </div>
 
 <script>
@@ -128,7 +178,9 @@
         document.querySelectorAll('.vista').forEach(el => el.classList.remove('activa'));
         document.getElementById(idVista).classList.add('activa');
         
+        // Carga selectiva de datos: solo llamamos a la base de datos de la vista activa
         if(idVista === 'vista-admin') cargarMascotasAdmin(); 
+        if(idVista === 'vista-solicitudes') cargarSolicitudesAdmin(); 
         if(idVista === 'vista-catalogo') cargarCatalogoPublico();
     }
 
@@ -143,13 +195,14 @@
             botonesHTML += `<button class="btn-primary" onclick="cambiarVista('vista-login')">Iniciar Sesión</button>`;
         } else {
             if (rol === 'admin') {
-                botonesHTML += `<button class="btn-primary" onclick="cambiarVista('vista-admin')">⚙️ Panel Admin</button>`;
+                // AQUÍ ESTÁN LOS DOS BOTONES SEPARADOS
+                botonesHTML += `<button class="btn-primary" onclick="cambiarVista('vista-admin')">🐶 Panel Mascotas</button>`;
+                botonesHTML += `<button class="btn-primary" style="background-color: #17a2b8;" onclick="cambiarVista('vista-solicitudes')">📋 Solicitudes</button>`;
             } else {
                 botonesHTML += `<button class="btn-primary" onclick="cambiarVista('vista-perfil')">👤 Mi Perfil</button>`;
             }
             botonesHTML += `<button class="btn-danger" onclick="cerrarSesion()">Salir</button>`;
         }
-        
         menu.innerHTML = botonesHTML;
     }
 
@@ -165,24 +218,20 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, password })
             });
-
             const datos = await respuesta.json();
 
             if (respuesta.ok) {
                 localStorage.setItem('token', datos.token);
                 localStorage.setItem('rol', datos.rol);
                 alert("¡Bienvenido!");
-                
                 document.getElementById('form-login').reset();
                 actualizarNavegacion();
-                
                 if (datos.rol === 'admin') cambiarVista('vista-admin');
                 else cambiarVista('vista-catalogo');
             } else {
                 alert(datos.error);
             }
         } catch (error) {
-            console.error("Error en login:", error);
             alert("Error al conectar con el servidor.");
         }
     });
@@ -194,17 +243,15 @@
         cambiarVista('vista-catalogo');
     }
 
-    // --- 3. LÓGICA DEL PANEL ADMINISTRATIVO ---
+    // --- 3. LÓGICA DEL PANEL ADMINISTRATIVO (MASCOTAS) ---
     async function cargarMascotasAdmin() {
         try {
             const respuesta = await fetch('/mascotas'); 
             const mascotas = await respuesta.json();
-            
             const tbody = document.getElementById('tabla-mascotas-admin');
             tbody.innerHTML = ''; 
 
             mascotas.forEach(m => {
-                // Miniatura para la tabla
                 const fotoHtml = m.foto_url 
                     ? `<img src="${m.foto_url}" style="width: 40px; height: 40px; object-fit: cover; border-radius: 4px;">` 
                     : `<span style="font-size: 10px; color: #999;">Sin foto</span>`;
@@ -226,14 +273,11 @@
         }
     }
 
-    // ¡NUEVO!: Envío mediante FormData para soportar imágenes
     document.getElementById('form-mascota').addEventListener('submit', async (e) => {
         e.preventDefault(); 
-        
         const token = localStorage.getItem('token');
         const formData = new FormData();
 
-        // Agregamos los campos de texto
         formData.append('nombre', document.getElementById('mascota-nombre').value);
         formData.append('especie', document.getElementById('mascota-especie').value);
         formData.append('raza', document.getElementById('mascota-raza').value);
@@ -243,7 +287,6 @@
         formData.append('energia', document.getElementById('mascota-energia').value);
         formData.append('salud', document.getElementById('mascota-salud').value);
 
-        // Agregamos el archivo (si el usuario seleccionó uno)
         const inputFoto = document.getElementById('mascota-foto');
         if (inputFoto.files.length > 0) {
             formData.append('foto', inputFoto.files[0]);
@@ -252,10 +295,7 @@
         try {
             const respuesta = await fetch('/agregar', {
                 method: 'POST',
-                headers: { 
-                    'Authorization': token 
-                    // Ya NO enviamos 'Content-Type', FormData se encarga de esto.
-                },
+                headers: { 'Authorization': token },
                 body: formData
             });
 
@@ -274,26 +314,95 @@
 
     async function borrarMascota(id) {
         if(!confirm(`¿Estás seguro de que quieres borrar la mascota #${id}?`)) return;
-        
         const token = localStorage.getItem('token');
         try {
             const respuesta = await fetch(`/mascotas/${id}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': token }
             });
-
-            if(respuesta.ok) {
-                cargarMascotasAdmin(); 
-            } else {
-                const errorData = await respuesta.json();
-                alert("Error: " + errorData.error);
-            }
+            if(respuesta.ok) cargarMascotasAdmin(); 
         } catch (error) {
             console.error("Error al borrar:", error);
         }
     }
 
-    // --- 4. LÓGICA DEL CATÁLOGO PÚBLICO ---
+    // --- 4. LÓGICA DEL PANEL DE GESTIÓN DE SOLICITUDES ---
+    async function cargarSolicitudesAdmin() {
+        const token = localStorage.getItem('token');
+        try {
+            const respuesta = await fetch('/admin/solicitudes', {
+                headers: { 'Authorization': token }
+            });
+            const solicitudes = await respuesta.json();
+            const tbody = document.getElementById('tabla-solicitudes-admin');
+            tbody.innerHTML = '';
+
+            if (solicitudes.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="padding: 20px; text-align: center; color: #666;">No hay postulaciones registradas en el sistema.</td></tr>';
+                return;
+            }
+
+            solicitudes.forEach(s => {
+                let respuestasHtml = '<ul style="margin: 0; padding-left: 15px; font-size: 13px; color: #555;">';
+                for (const [campo, valor] of Object.entries(s.datos_formulario)) {
+                    respuestasHtml += `<li><strong>${campo}:</strong> ${valor}</li>`;
+                }
+                respuestasHtml += '</ul>';
+
+                let accionesHtml = '';
+                if (s.estado === 'pendiente') {
+                    accionesHtml = `
+                        <button onclick="resolverSolicitud(${s.id}, 'aprobada')" class="btn-primary" style="padding: 5px 10px; font-size: 11px; background-color: #28a745;">Aprobar</button>
+                        <button onclick="resolverSolicitud(${s.id}, 'rechazada')" class="btn-danger" style="padding: 5px 10px; font-size: 11px; margin-left: 4px;">Rechazar</button>
+                    `;
+                } else {
+                    accionesHtml = `<span style="font-size: 12px; color: #aaa; font-style: italic;">Evaluada</span>`;
+                }
+
+                let colorBadge = s.estado === 'aprobada' ? '#28a745' : (s.estado === 'rechazada' ? '#dc3545' : '#ffc107');
+                let colorTexto = s.estado === 'pendiente' ? '#333' : '#fff';
+
+                tbody.innerHTML += `
+                    <tr style="border-bottom: 1px solid #eee; font-size: 14px;">
+                        <td style="padding: 12px;"><strong>#${s.id}</strong></td>
+                        <td style="padding: 12px;">${s.nombre_usuario}<br><small style="color:#777;">${s.email_usuario}</small></td>
+                        <td style="padding: 12px;">${s.nombre_mascota} <small style="color:#666;">(ID: ${s.mascota_id})</small></td>
+                        <td style="padding: 12px;">${respuestasHtml}</td>
+                        <td style="padding: 12px;"><span style="background: ${colorBadge}; color: ${colorTexto}; padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: bold; text-transform: uppercase;">${s.estado}</span></td>
+                        <td style="padding: 12px;">${accionesHtml}</td>
+                    </tr>`;
+            });
+        } catch (error) {
+            console.error("Error al renderizar las solicitudes:", error);
+        }
+    }
+
+    async function resolverSolicitud(idSolicitud, nuevoEstado) {
+        if(!confirm(`¿Estás seguro de marcar esta solicitud como: ${nuevoEstado.toUpperCase()}?`)) return;
+        const token = localStorage.getItem('token');
+        try {
+            const respuesta = await fetch(`/admin/solicitudes/${idSolicitud}`, {
+                method: 'PUT',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': token 
+                },
+                body: JSON.stringify({ estado: nuevoEstado })
+            });
+
+            if (respuesta.ok) {
+                alert(`Trámite resuelto como ${nuevoEstado} exitosamente.`);
+                cargarSolicitudesAdmin();
+            } else {
+                const err = await respuesta.json();
+                alert("Error: " + err.error);
+            }
+        } catch (error) {
+            console.error("Error al dictaminar:", error);
+        }
+    }
+
+    // --- 5. LÓGICA DEL CATÁLOGO PÚBLICO ---
     async function cargarCatalogoPublico() {
         try {
             const respuesta = await fetch('/mascotas');
@@ -301,24 +410,27 @@
             const contenedor = document.getElementById('contenedor-tarjetas');
             contenedor.innerHTML = '';
 
-            const disponibles = mascotas.filter(m => m.estado_adopcion === 'disponible');
+            const visibles = mascotas.filter(m => m.estado_adopcion !== 'adoptado');
 
-            if (disponibles.length === 0) {
+            if (visibles.length === 0) {
                 contenedor.innerHTML = '<p style="color: #666;">No hay mascotas disponibles en este momento. ¡Vuelve pronto!</p>';
                 return;
             }
 
-            disponibles.forEach(m => {
-                // Si hay foto renderizamos la imagen, si no, el placeholder gris
+            visibles.forEach(m => {
                 const imagenHtml = m.foto_url 
                     ? `<img src="${m.foto_url}" alt="Foto de ${m.nombre}" class="mascota-img">` 
                     : `<div class="mascota-img-placeholder">Sin foto</div>`;
+
+                const badgeEspecie = m.estado_adopcion === 'en_proceso'
+                    ? `<span class="mascota-badge" style="background: #fff3cd; color: #856404; border: 1px solid #ffeeba;">${m.especie} • Solicitada</span>`
+                    : `<span class="mascota-badge">${m.especie} • ${m.raza}</span>`;
 
                 contenedor.innerHTML += `
                     <div class="mascota-card">
                         ${imagenHtml}
                         <h3>${m.nombre}</h3>
-                        <span class="mascota-badge">${m.especie} • ${m.raza}</span>
+                        ${badgeEspecie}
                         <div class="mascota-info"><span><strong>Tamaño:</strong></span> <span>${m.tamano}</span></div>
                         <div class="mascota-info"><span><strong>Sexo:</strong></span> <span>${m.sexo}</span></div>
                         <div class="mascota-info"><span><strong>Energía:</strong></span> <span>${m.energia}</span></div>
@@ -337,13 +449,53 @@
             alert("¡Para postularte debes iniciar sesión o crear una cuenta primero!");
             cambiarVista('vista-login');
         } else {
-            alert(`¡Excelente! Próximamente programaremos el formulario para adoptar a ${nombreMascota} (ID: ${mascotaId}).`);
+            document.getElementById('adopcion-mascota-id').value = mascotaId;
+            document.getElementById('titulo-formulario').innerText = `Postulación para adoptar a ${nombreMascota}`;
+            cambiarVista('vista-formulario');
         }
     }
 
+    // --- 6. ENVIAR FORMULARIO DE ADOPCIÓN ---
+    document.getElementById('form-adopcion').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const token = localStorage.getItem('token');
+        const mascotaId = document.getElementById('adopcion-mascota-id').value;
+        
+        const payload = {
+            mascota_id: mascotaId,
+            datos_formulario: {
+                tipo_vivienda: document.getElementById('preg-vivienda').value,
+                tiene_patio: document.getElementById('preg-patio').value,
+                horas_sola_al_dia: document.getElementById('preg-horas').value,
+                otras_mascotas: document.getElementById('preg-otras-mascotas').value
+            }
+        };
+
+        try {
+            const respuesta = await fetch('/solicitudes', {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': token 
+                },
+                body: JSON.stringify(payload)
+            });
+            const datos = await respuesta.json();
+
+            if (respuesta.ok) {
+                alert(datos.mensaje);
+                document.getElementById('form-adopcion').reset();
+                cambiarVista('vista-catalogo');
+            } else {
+                alert("Error: " + (datos.error || "No se pudo procesar"));
+            }
+        } catch (error) {
+            alert("Error al conectar con el servidor.");
+        }
+    });
+
     // Inicializar estado de la página
     actualizarNavegacion();
-
 </script>
 </body>
 </html>

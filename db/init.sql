@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS mascotas (
     especie VARCHAR(50) NOT NULL, -- Para filtros: Perro, Gato, etc.
     raza VARCHAR(50) DEFAULT 'Mestizo', -- Para filtros
     fecha_nacimiento_aprox DATE NOT NULL, -- Para calcular edad dinámicamente
-    tamano ENUM('Pequeño', 'Mediano', 'Grande', 'Gigante') NOT NULL, -- Para filtros
+    tamano ENUM('Chico', 'Mediano', 'Grande', 'Gigante') NOT NULL, -- Para filtros
     sexo ENUM('Macho', 'Hembra') NOT NULL, -- Para filtros (NUEVO)
     energia ENUM('Baja', 'Media', 'Alta') DEFAULT 'Media', -- Para filtros (NUEVO)
     salud VARCHAR(100) NOT NULL, 

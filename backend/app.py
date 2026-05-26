@@ -5,6 +5,7 @@ import time
 import uuid
 from functools import wraps
 import os
+import json
 
 app = Flask(__name__)
 
@@ -18,7 +19,8 @@ def obtener_conexion():
                 user='root',
                 password='root',
                 database='adoptme_db',
-                cursorclass=pymysql.cursors.DictCursor
+                cursorclass=pymysql.cursors.DictCursor,
+                charset='utf8mb4'
             )
             return conexion
         except pymysql.MySQLError as e:
@@ -129,8 +131,12 @@ def agregar_mascota():
         # Generamos un nombre único y seguro para evitar sobreescribir archivos
         nombre_seguro = f"{uuid.uuid4().hex}.{ext}"
         
+        # --- AQUÍ ESTÁ EL PARCHE QUE FALTABA ---
+        carpeta_destino = '/app/uploads'
+        os.makedirs(carpeta_destino, exist_ok=True) # Obliga a crear la carpeta si no existe
+        
         # Le decimos a Python dónde guardar el archivo físicamente
-        ruta_fisica = os.path.join('/app/uploads', nombre_seguro)
+        ruta_fisica = os.path.join(carpeta_destino, nombre_seguro)
         archivo_foto.save(ruta_fisica)
         
         # Esta es la ruta pública que guardaremos en la base de datos para Nginx
@@ -242,8 +248,10 @@ def crear_solicitud(usuario_id):
             mascota = cursor.fetchone()
             if not mascota:
                 return jsonify({"error": "La mascota especificada no existe."}), 404
-            if mascota['estado_adopcion'] != 'disponible':
-                return jsonify({"error": "Esta mascota ya no se encuentra disponible para adopción."}), 400
+            
+            # NUEVA REGLA OPERATIVA: Aceptamos solicitudes si está disponible o en proceso
+            if mascota['estado_adopcion'] not in ['disponible', 'en_proceso']:
+                return jsonify({"error": "Esta mascota ya fue adoptada y no admite más solicitudes."}), 400
 
             # Insertamos la solicitud vinculando el usuario_id de la sesión activa
             sql = """INSERT INTO solicitudes (usuario_id, mascota_id, datos_formulario, estado) 
@@ -260,6 +268,73 @@ def crear_solicitud(usuario_id):
     except Exception as e:
         conexion.rollback()
         return jsonify({"error": "Error interno al procesar la solicitud", "detalle": str(e)}), 500
+    finally:
+        conexion.close()
+
+@app.route('/admin/solicitudes', methods=['GET'])
+@requiere_admin # Solo administradores pueden auditar formularios
+def ver_todas_solicitudes():
+    conexion = obtener_conexion()
+    try:
+        with conexion.cursor() as cursor:
+            # Hacemos un JOIN para saber qué usuario aplicó por qué mascota
+            sql = """
+                SELECT s.id, s.usuario_id, s.mascota_id, s.datos_formulario, s.estado, s.creado_en,
+                       u.nombre_completo AS nombre_usuario, u.email AS email_usuario,
+                       m.nombre AS nombre_mascota
+                FROM solicitudes s
+                JOIN usuarios u ON s.usuario_id = u.id
+                JOIN mascotas m ON s.mascota_id = m.id
+                ORDER BY s.creado_en DESC
+            """
+            cursor.execute(sql)
+            solicitudes = cursor.fetchall()
+            
+            for s in solicitudes:
+                # Si el JSON viene como string desde MySQL, lo decodificamos a objeto nativo de Python
+                if isinstance(s['datos_formulario'], str):
+                    s['datos_formulario'] = json.loads(s['datos_formulario'])
+                s = sanitizar_fechas(s)
+                
+        return jsonify(solicitudes), 200
+    finally:
+        conexion.close()
+
+@app.route('/admin/solicitudes/<int:id_solicitud>', methods=['PUT'])
+@requiere_admin
+def resolver_solicitud(id_solicitud):
+    datos = request.get_json()
+    nuevo_estado = datos.get('estado') # 'aprobado' o 'rechazado'
+    
+    if nuevo_estado not in ['aprobada', 'rechazada', 'pendiente']:
+        return jsonify({"error": "Estado de resolución inválido"}), 400
+        
+    conexion = obtener_conexion()
+    try:
+        with conexion.cursor() as cursor:
+            # Consultamos el id de la mascota vinculada a esta solicitud
+            cursor.execute("SELECT mascota_id FROM solicitudes WHERE id = %s", (id_solicitud,))
+            solicitud = cursor.fetchone()
+            if not solicitud:
+                return jsonify({"error": "La solicitud especificada no existe."}), 404
+                
+            mascota_id = solicitud['mascota_id']
+            
+            # 1. Actualizamos el estado del trámite
+            cursor.execute("UPDATE solicitudes SET estado = %s WHERE id = %s", (nuevo_estado, id_solicitud))
+            
+            # 2. Lógica de negocio automatizada para la mascota
+            if nuevo_estado == 'aprobada':
+                cursor.execute("UPDATE mascotas SET estado_adopcion = 'adoptado' WHERE id = %s", (mascota_id,))
+            elif nuevo_estado == 'rechazada':
+                # Si se rechaza, la mascota vuelve a estar 100% disponible
+                cursor.execute("UPDATE mascotas SET estado_adopcion = 'disponible' WHERE id = %s", (mascota_id,))
+                
+        conexion.commit()
+        return jsonify({"mensaje": f"Solicitud procesada como {nuevo_estado} con éxito."}), 200
+    except Exception as e:
+        conexion.rollback()
+        return jsonify({"error": "Error interno al actualizar el trámite", "detalle": str(e)}), 500
     finally:
         conexion.close()
 
